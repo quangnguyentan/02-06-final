@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "esnext"],
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "bundler", // Switch to "bundler" for Vite compatibility
+    "allowSyntheticDefaultImports": true, // Allow default imports for CommonJS modules
+    "esModuleInterop": true, // Improve interop between CommonJS and ES Modules
+    "strict": true, // Enable strict type checking
+    "skipLibCheck": true, // Skip type checking of declaration files to avoid third-party issues
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true, // No output during type checking (Vite handles bundling)
+    "isolatedModules": true // Ensure compatibility with Vite's transformation
+  },
+  "include": ["src/**/*", "../index.tsx"],
+  "exclude": ["node_modules"]
+}

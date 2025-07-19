@@ -1,0 +1,251 @@
+/* Các style chung */
+.no-arrows {
+  @apply appearance-none;
+  -moz-appearance: textfield; /* Firefox */
+}
+
+.no-arrows::-webkit-inner-spin-button,
+.no-arrows::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.containerAuth {
+  display: flex;
+  height: 100vh;
+  font-family: "Rubik", sans-serif;
+  font-size: 16px;
+  background-color: #060826;
+  color: white;
+}
+
+.leftAuth {
+  display: flex;
+  animation-name: left;
+  animation-duration: 1s;
+  animation-fill-mode: both;
+  animation-delay: 0.3s;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  width: 440px; /* Chiều rộng mặc định cho desktop */
+  padding: 3rem;
+}
+
+.rightAuth {
+  flex: 1;
+  transition: 1s;
+  background-image: url("https://pbs.twimg.com/media/GtUWTEZXAAAv5fJ?format=jpg&name=large");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.loginSectionHeaderH2 {
+  margin: 0;
+  font-size: 2rem; /* Kích thước chữ lớn hơn cho tiêu đề */
+}
+
+.loginSectionHeaderH4 {
+  color: #fff;
+  opacity: 0.4;
+  font-size: 1rem;
+  font-weight: normal;
+}
+
+.loginSectionForm {
+  display: flex;
+  flex-direction: column;
+}
+
+.loginSectionFormP {
+  text-align: right;
+}
+
+.loginSectionFormPA {
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.inputField {
+  height: 46px;
+  padding: 0 1rem;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  outline: none;
+  margin-top: 1.25rem;
+  transition: 0.2s;
+  font-family: "Rubik", sans-serif;
+  width: 100%; /* Đảm bảo input chiếm toàn bộ chiều rộng */
+}
+
+.inputField:focus {
+  border-color: #d93280;
+}
+
+.loginSectionFormButton {
+  padding: 0.75rem 0.625rem;
+  border: 0;
+  background: linear-gradient(to right, #d93280 0%, #44118c 100%);
+  border-radius: 0.25rem;
+  margin-top: 0.625rem;
+  color: #fff;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-family: "Rubik", sans-serif;
+  cursor: pointer;
+}
+
+.animation {
+  animation-name: move;
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+  animation-delay: 1s;
+}
+
+.a1 {
+  animation-delay: 1s;
+}
+.a1 {
+  animation-delay: 1.1s;
+}
+.a3 {
+  animation-delay: 1.4s;
+}
+.a4 {
+  animation-delay: 1.6s;
+}
+.a5 {
+  animation-delay: 1.8s;
+}
+.a6 {
+  animation-delay: 2s;
+}
+
+@keyframes move {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-40px);
+  }
+  100% {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+@keyframes left {
+  0% {
+    opacity: 0;
+    width: 0%;
+  }
+  100% {
+    opacity: 1;
+    width: 440px;
+    padding: 3rem;
+  }
+}
+
+/* Media Query cho tablet (640px - 1024px) */
+@media (max-width: 1024px) {
+  .containerAuth {
+    flex-direction: row; /* Vẫn giữ bố cục ngang */
+  }
+
+  .leftAuth {
+    width: 360px; /* Giảm chiều rộng */
+    padding: 2rem;
+  }
+
+  .loginSectionHeaderH2 {
+    font-size: 1.75rem; /* Giảm kích thước chữ */
+  }
+
+  .loginSectionHeaderH4 {
+    font-size: 0.875rem;
+  }
+
+  .inputField {
+    height: 40px; /* Giảm chiều cao input */
+    margin-top: 1rem;
+  }
+
+  .loginSectionFormButton {
+    padding: 0.625rem;
+    margin-top: 0.5rem;
+  }
+
+  @keyframes left {
+    0% {
+      opacity: 0;
+      width: 0%;
+    }
+    100% {
+      opacity: 1;
+      width: 360px;
+      padding: 2rem;
+    }
+  }
+}
+
+/* Media Query cho điện thoại (< 640px) */
+@media (max-width: 640px) {
+  .containerAuth {
+    flex-direction: column; /* Chuyển sang bố cục dọc */
+    height: auto; /* Bỏ chiều cao cố định */
+    min-height: 50vh; /* Đảm bảo chiếm toàn màn hình */
+    justify-content: center; /* Căn giữa nội dung */
+    justify-items: center; /* Căn giữa nội dung */
+  }
+
+  .leftAuth {
+    width: 100%; /* Chiếm toàn bộ chiều rộng */
+    padding: 1.5rem;
+    animation: none; /* Tắt animation cho màn hình nhỏ */
+  }
+
+  .rightAuth {
+    display: none; /* Ẩn hoàn toàn .rightAuth trên điện thoại */
+  }
+
+  .loginSectionHeaderH2 {
+    font-size: 1.5rem;
+  }
+
+  .loginSectionHeaderH4 {
+    font-size: 0.75rem;
+  }
+
+  .inputField {
+    height: 38px;
+    margin-top: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .loginSectionFormButton {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .loginSectionFormP {
+    font-size: 0.75rem;
+  }
+
+  .loginSectionFormPA {
+    font-size: 0.75rem;
+  }
+
+  /* Tắt animation left cho điện thoại */
+  @keyframes left {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+      width: 100%;
+      padding: 1.5rem;
+    }
+  }
+}
