@@ -48,7 +48,12 @@ const Public = () => {
       .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
   };
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
+    return (
+      bannerData?.filter(
+        (b) =>
+          b.isActive !== false && filterBanners("POPUP", "ALL_PAGE")?.imageUrl
+      ) || []
+    );
   }, [bannerData]);
   React.useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
@@ -77,7 +82,7 @@ const Public = () => {
             position="top"
             imageUrl={filterBanners("TOP", "ALL_PAGE")?.imageUrl}
           />
-          <div className="pt-[6px] flex-grow relative">
+          <div className="flex-grow relative">
             <Header />
             <div className="container mx-auto relative px-1 sm:px-0">
               <div className="hidden lg:block">

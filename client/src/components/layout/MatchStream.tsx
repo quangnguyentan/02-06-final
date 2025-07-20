@@ -96,7 +96,15 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
       .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
   };
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
+    return (
+      bannerData?.filter(
+        (b) =>
+          b.isActive !== false &&
+          filterBanners("TOP", "LIVE_PAGE")?.imageUrl &&
+          filterBanners("BOTTOM", "LIVE_PAGE")?.imageUrl &&
+          filterBanners("FOOTER", "LIVE_PAGE")?.imageUrl
+      ) || []
+    );
   }, [bannerData]);
   const [isChatVisible, setIsChatVisible] = React.useState(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -109,7 +117,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
   const streamLink = state?.streamLink;
   React.useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-  }, [location.pathname]);
+  }, []);
   return (
     <div className="flex flex-col min-h-screen w-full">
       <main

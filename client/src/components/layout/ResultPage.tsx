@@ -83,7 +83,13 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
   };
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
+    return (
+      bannerData?.filter(
+        (b) =>
+          b.isActive !== false &&
+          filterBanners("BOTTOM", "SHEDULE_PAGE")?.imageUrl
+      ) || []
+    );
   }, [bannerData]);
   const pageTitleDate = selectedDateTab?.isToday
     ? "HÔM NAY"

@@ -65,7 +65,12 @@ const AppContent: React.FC = () => {
   };
 
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
+    return (
+      bannerData?.filter(
+        (b) =>
+          b.isActive !== false && filterBanners("INLINE", "HOME_PAGE")?.imageUrl
+      ) || []
+    );
   }, [bannerData]);
   const { dateTabs, scheduleData } = useScheduleData(currentMatch);
   const initialDateId = formatDate(today);

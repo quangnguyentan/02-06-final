@@ -53,7 +53,15 @@ const AppContent: React.FC = () => {
       .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
   };
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
+    return (
+      bannerData?.filter(
+        (b) =>
+          b.isActive !== false &&
+          filterBanners("TOP", "HOME_PAGE")?.imageUrl &&
+          filterBanners("BOTTOM", "HOME_PAGE")?.imageUrl &&
+          filterBanners("INLINE", "HOME_PAGE")?.imageUrl
+      ) || []
+    );
   }, [bannerData]);
   const filterMatchesBySport = React.useCallback(
     (slug: string) => {

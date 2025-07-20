@@ -36,7 +36,13 @@ const VideoReelStreamPage: React.FC<VideoReelStreamPageProps> = ({
       .sort((a, b) => (b.priority || 0) - (a.priority || 0))[0];
   };
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
+    return (
+      bannerData?.filter(
+        (b) =>
+          b.isActive !== false &&
+          filterBanners("FOOTER", "REPLAY_VIDEO_PAGE")?.imageUrl
+      ) || []
+    );
   }, [bannerData]);
   const filteredCategorizedReels = categorizedReels.filter(
     (_, index) => index === 0 || index >= 4

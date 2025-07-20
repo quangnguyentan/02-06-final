@@ -15,8 +15,8 @@ const StickyAdBanner: React.FC<StickyAdBannerProps> = ({
   const { bannerData } = useData();
   const [hiddenBanner, setHiddenBanner] = React.useState(false);
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
-  }, [bannerData]);
+    return bannerData?.filter((b) => b.isActive !== false && imageUrl) || [];
+  }, [bannerData, imageUrl]);
   return (
     <div
       className={`

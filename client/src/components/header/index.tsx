@@ -92,16 +92,24 @@ const MainNavbar: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
     backgroundColor: "transparent", // Make background transparent
   };
 
+  // const handleEmailClick = () => {
+  //   const email = "ads.hoiquantv@gmail.com";
+  //   const subject = "Liên hệ quảng cáo";
+  //   const body = "Xin chào, tôi muốn liên hệ về dịch vụ quảng cáo.";
+  //   window.open(
+  //     `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(
+  //       email
+  //     )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
+  //     "_blank"
+  //   );
+  // };
   const handleEmailClick = () => {
     const email = "ads.hoiquantv@gmail.com";
     const subject = "Liên hệ quảng cáo";
     const body = "Xin chào, tôi muốn liên hệ về dịch vụ quảng cáo.";
-    window.open(
-      `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(
-        email
-      )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-      "_blank"
-    );
+    window.location.href = `mailto:${email}?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
   };
   const navItems: NavItem[] = React.useMemo(() => {
     const activeSportName = getInitialActiveSportName();
@@ -164,175 +172,186 @@ const MainNavbar: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
   }, []);
 
   return (
-    <div className="bg-[#1E2027] text-gray-300 flex items-center justify-between p-2 relative">
-      <img
-        onClick={() => {
-          navigate("/");
-          setSelectedPage("TRANG CHỦ");
-          localStorage.setItem("selectedPage", "TRANG CHỦ");
-          setSelectedSportsNavbarPage("");
-          localStorage.removeItem("selectedSportsNavbarPage");
-          localStorage.setItem("previousSection", "home");
-        }}
-        src={logo}
-        alt="HoiQuanTV Logo"
-        className="h-[50px] md:h-[70px] mr-2 md:mr-6 w-32 md:w-36 object-cover cursor-pointer"
-      />
-      <div>
-        <nav className="hidden md:flex items-center">
-          {navItems.map((item) => (
-            <div
-              key={item.label}
-              onClick={() => {
-                const activeSportName =
-                  selectedSportsNavbarPage || getInitialActiveSportName();
-                const sport = sportData?.find(
-                  (s) => s.name === activeSportName
-                );
-                const targetSlug = sport ? sport.slug : "esports";
-                const finalUrl =
-                  item.url.includes(":slug") || item.url.includes(":title")
-                    ? item.url
-                        .replace(":slug", targetSlug ?? "")
-                        .replace(":title", targetSlug ?? "")
-                    : item.url;
+    <>
+      <div
+        className="flex sm:hidden items-center justify-center bg-blue-500 w-full py-2"
+        onClick={handleEmailClick}
+      >
+        <span className="text-xs text-white">
+          Liên hệ quảng cáo: ads.hoiquantv@gmail.com
+        </span>
+      </div>
+      <div className="bg-[#1E2027] text-gray-300 flex items-center justify-between p-2 relative">
+        <img
+          onClick={() => {
+            navigate("/");
+            setSelectedPage("TRANG CHỦ");
+            localStorage.setItem("selectedPage", "TRANG CHỦ");
+            setSelectedSportsNavbarPage("");
+            localStorage.removeItem("selectedSportsNavbarPage");
+            localStorage.setItem("previousSection", "home");
+          }}
+          src={logo}
+          alt="HoiQuanTV Logo"
+          className="h-[50px] md:h-[70px] mr-2 md:mr-6 w-32 md:w-36 object-cover cursor-pointer"
+        />
 
-                navigate(finalUrl);
-                setSelectedPage(item.label);
-                localStorage.setItem("selectedPage", item.label);
-                if (item.nameForHighlight) {
-                  setSelectedSportsNavbarPage(item.nameForHighlight);
-                  localStorage.setItem(
-                    "selectedSportsNavbarPage",
-                    item.nameForHighlight
-                  );
-                } else {
-                  setSelectedSportsNavbarPage("");
-                  localStorage.removeItem("selectedSportsNavbarPage");
-                }
-              }}
-              className={`px-1.5 sm:px-2 lg:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs lg:text-sm rounded transition-colors whitespace-nowrap font-bold cursor-pointer ${
-                selectedPage === item.label
-                  ? "text-current-color"
-                  : "text-gray-300 hover:text-current-color"
-              }`}
-            >
-              {item.label}
-            </div>
-          ))}
-        </nav>
-      </div>
-      <div className="flex items-center space-x-1.5 md:space-x-1 xl:space-x-2">
-        <button
-          className="hidden sm:flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 font-medium rounded text-sm"
-          onClick={handleEmailClick}
-        >
-          {/* <TVIcon className="w-5 h-5 mr-1" /> */}
-          LHQC: ads.hoiquantv@gmail.com
-        </button>
-        <button className="hidden sm:flex items-center bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-medium px-3 py-2 rounded text-sm">
-          Cược Uy Tín
-        </button>
         <div>
-          {isLoggedIn && token ? (
-            <div className="relative" ref={wrapperRef}>
-              <button
-                onClick={toggleDropdown}
-                className="flex items-center gap-2 focus:outline-none"
+          <nav className="hidden md:flex items-center">
+            {navItems.map((item) => (
+              <div
+                key={item.label}
+                onClick={() => {
+                  const activeSportName =
+                    selectedSportsNavbarPage || getInitialActiveSportName();
+                  const sport = sportData?.find(
+                    (s) => s.name === activeSportName
+                  );
+                  const targetSlug = sport ? sport.slug : "esports";
+                  const finalUrl =
+                    item.url.includes(":slug") || item.url.includes(":title")
+                      ? item.url
+                          .replace(":slug", targetSlug ?? "")
+                          .replace(":title", targetSlug ?? "")
+                      : item.url;
+
+                  navigate(finalUrl);
+                  setSelectedPage(item.label);
+                  localStorage.setItem("selectedPage", item.label);
+                  if (item.nameForHighlight) {
+                    setSelectedSportsNavbarPage(item.nameForHighlight);
+                    localStorage.setItem(
+                      "selectedSportsNavbarPage",
+                      item.nameForHighlight
+                    );
+                  } else {
+                    setSelectedSportsNavbarPage("");
+                    localStorage.removeItem("selectedSportsNavbarPage");
+                  }
+                }}
+                className={`px-1.5 sm:px-2 lg:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs lg:text-sm rounded transition-colors whitespace-nowrap font-bold cursor-pointer ${
+                  selectedPage === item.label
+                    ? "text-current-color"
+                    : "text-gray-300 hover:text-current-color"
+                }`}
               >
-                <img
-                  src={userData?.avatar ? userData?.avatar : avatar} // Replace with actual avatar path
-                  alt="User Avatar"
-                  className="w-4 h-4 md:w-6 md:h-6 rounded-full"
-                />
-                <span className="font-bold text-[9px] md:text-sm">
-                  {userData?.username ?? "anonymous"}
-                </span>
-              </button>
-              <AnimatePresence>
-                {isDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-4 w-48 bg-white text-gray-800 rounded-md shadow-lg z-10"
-                  >
-                    <ul className="py-1">
-                      <li>
-                        <button
-                          onClick={() => alert("Settings clicked")}
-                          className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
-                        >
-                          <Settings
-                            size={16}
-                            className="mr-2"
-                            onClick={() => {}}
-                          />
-                          Cài đặt
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setIsDropdownOpen(false);
-                          }}
-                          className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
-                        >
-                          <LogOut size={16} className="mr-2" />
-                          Đăng xuất
-                        </button>
-                      </li>
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ) : (
-            <button
-              onClick={handleOpen}
-              className="bg-slate-700 hover:bg-slate-600 p-1.5 sm:p-2 rounded-full"
-            >
-              <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-            </button>
-          )}
-          <Modal
-            aria-labelledby="signin-modal-title"
-            aria-describedby="signin-modal-description"
-            open={open}
-            onClose={handleClose}
-            closeAfterTransition
-            slots={{ backdrop: Backdrop }}
-            slotProps={{ backdrop: { timeout: 500 } }}
-          >
-            <Fade in={open}>
-              <Box sx={style}>
-                <Auth handleClose={handleClose} />
-              </Box>
-            </Fade>
-          </Modal>
+                {item.label}
+              </div>
+            ))}
+          </nav>
         </div>
-        <button
-          className="md:hidden p-2 text-gray-300 hover:text-white"
-          onClick={onOpenMenu}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-6 h-6"
+        <div className="flex items-center space-x-1.5 md:space-x-1 xl:space-x-2">
+          <button
+            className="hidden sm:flex items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 font-medium rounded text-sm"
+            onClick={handleEmailClick}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-            />
-          </svg>
-        </button>
+            {/* <TVIcon className="w-5 h-5 mr-1" /> */}
+            LHQC: ads.hoiquantv@gmail.com
+          </button>
+          <button className="hidden sm:flex items-center bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-medium px-3 py-2 rounded text-sm">
+            Cược Uy Tín
+          </button>
+          <div>
+            {isLoggedIn && token ? (
+              <div className="relative" ref={wrapperRef}>
+                <button
+                  onClick={toggleDropdown}
+                  className="flex items-center gap-2 focus:outline-none"
+                >
+                  <img
+                    src={userData?.avatar ? userData?.avatar : avatar} // Replace with actual avatar path
+                    alt="User Avatar"
+                    className="w-4 h-4 md:w-6 md:h-6 rounded-full"
+                  />
+                  <span className="font-bold text-[9px] md:text-sm">
+                    {userData?.username ?? "anonymous"}
+                  </span>
+                </button>
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-4 w-48 bg-white text-gray-800 rounded-md shadow-lg z-10"
+                    >
+                      <ul className="py-1">
+                        <li>
+                          <button
+                            onClick={() => alert("Settings clicked")}
+                            className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            <Settings
+                              size={16}
+                              className="mr-2"
+                              onClick={() => {}}
+                            />
+                            Cài đặt
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => {
+                              handleLogout();
+                              setIsDropdownOpen(false);
+                            }}
+                            className="flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100"
+                          >
+                            <LogOut size={16} className="mr-2" />
+                            Đăng xuất
+                          </button>
+                        </li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <button
+                onClick={handleOpen}
+                className="bg-slate-700 hover:bg-slate-600 p-1.5 sm:p-2 rounded-full"
+              >
+                <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </button>
+            )}
+            <Modal
+              aria-labelledby="signin-modal-title"
+              aria-describedby="signin-modal-description"
+              open={open}
+              onClose={handleClose}
+              closeAfterTransition
+              slots={{ backdrop: Backdrop }}
+              slotProps={{ backdrop: { timeout: 500 } }}
+            >
+              <Fade in={open}>
+                <Box sx={style}>
+                  <Auth handleClose={handleClose} />
+                </Box>
+              </Fade>
+            </Modal>
+          </div>
+          <button
+            className="md:hidden p-2 text-gray-300 hover:text-white"
+            onClick={onOpenMenu}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

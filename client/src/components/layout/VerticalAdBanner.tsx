@@ -17,8 +17,8 @@ const VerticalAdBanner: React.FC<VerticalAdBannerProps> = ({
   const defaultImageUrl = "";
   const { bannerData } = useData();
   const activeBanners = React.useMemo(() => {
-    return bannerData?.filter((b) => b.isActive !== false) || [];
-  }, [bannerData]);
+    return bannerData?.filter((b) => b.isActive !== false && imageUrl) || [];
+  }, [bannerData, imageUrl]);
   return (
     activeBanners?.length > 0 && (
       <div
