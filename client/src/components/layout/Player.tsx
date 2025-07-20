@@ -115,6 +115,7 @@ const Player: FC<VideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef<number>(0);
   const doubleTapDelay = 300;
+  const [isLoadingHLS, setIsLoadingHLS] = useState<boolean>(false);
   const { hasUserInteracted, setHasUserInteracted } = useUserInteraction();
   const { pathname } = useLocation();
   const [timeRemaining, setTimeRemaining] = useState({
@@ -261,6 +262,7 @@ const Player: FC<VideoPlayerProps> = ({
       const isHlsSource = videoUrl.includes(".m3u8");
 
       if (isHlsSource) {
+        setIsLoadingHLS(true);
         if (Hls.isSupported()) {
           const hls = new Hls({
             maxBufferLength: 5,
@@ -287,6 +289,7 @@ const Player: FC<VideoPlayerProps> = ({
           hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
             if (data.timeRanges?.video && data.timeRanges.video.end(0) > 0) {
               setIsBufferReady(true);
+              setIsLoadingHLS(false);
             }
           });
 
@@ -297,6 +300,7 @@ const Player: FC<VideoPlayerProps> = ({
           hls.on(Hls.Events.ERROR, (event, data) => {
             console.warn("HLS.js error:", data);
             if (data.fatal) {
+              setIsLoadingHLS(false);
               switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                   setTimeout(() => hls.startLoad(), 1000);
@@ -305,7 +309,7 @@ const Player: FC<VideoPlayerProps> = ({
                   hls.recoverMediaError();
                   break;
                 default:
-                  setError("Lỗi phát video, vui lòng thử lại.");
+                  // setError("Lỗi phát video, vui lòng thử lại.");
                   break;
               }
             }
@@ -314,13 +318,16 @@ const Player: FC<VideoPlayerProps> = ({
           element.src = videoUrl;
           element.preload = "auto";
           setIsBufferReady(true);
+          setIsLoadingHLS(false);
         } else {
-          setError("Trình duyệt không hỗ trợ HLS.");
+          // setError("Trình duyệt không hỗ trợ HLS.");
+          setIsLoadingHLS(false);
         }
       } else {
         element.src = videoUrl;
         element.preload = "auto";
         setIsBufferReady(true);
+        setIsLoadingHLS(false);
       }
 
       setWasFirstPlayed(false);
@@ -371,7 +378,7 @@ const Player: FC<VideoPlayerProps> = ({
               setShowControls(false);
             }
           } else {
-            setError("Đang tải video, vui lòng đợi...");
+            // setError("Đang tải video, vui lòng đợi...");
           }
         }, 500);
       }
@@ -766,13 +773,17 @@ const Player: FC<VideoPlayerProps> = ({
           <FirstPlayButton>{error}</FirstPlayButton>
         </FirstPlayOverlay>
       )}
-      {!error && !wasFirstPlayed && (
+      {!error && !wasFirstPlayed && !isLoadingHLS && (
         <FirstPlayOverlay>
           <FirstPlayButton>
             <FaPlay size={30} />
           </FirstPlayButton>
         </FirstPlayOverlay>
       )}
+      {isLoadingHLS &&
+        videoUrl?.includes(".m3u8") &&
+        !isBufferReady &&
+        !error && <Spinner />}
       {showIcon && (
         <IconOverlay>
           {showIcon === "play" && <FaPlay size={50} />}
