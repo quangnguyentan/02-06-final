@@ -112,7 +112,7 @@ const ChatPanel: React.FC<{ isChatVisible?: boolean }> = ({
         {activeTab === "match" ? (
           <div className="relative w-full h-full">
             <iframe
-              src="https://www5.cbox.ws/box/?boxid=957607&boxtag=XAS4wp"
+              src="https://www5.cbox.ws/box/?boxid=957822&boxtag=bST1X5"
               width="100%"
               height="100%"
               frameBorder="0"
@@ -147,7 +147,7 @@ const ChatPanel: React.FC<{ isChatVisible?: boolean }> = ({
           // </div>
           <div className="relative w-full h-full">
             <iframe
-              src="https://www5.cbox.ws/box/?boxid=957607&boxtag=XAS4wp"
+              src="https://www5.cbox.ws/box/?boxid=957822&boxtag=bST1X5"
               width="100%"
               height="100%"
               frameBorder="0"
