@@ -1,34 +1,76 @@
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { FaVolumeMute, FaVolumeUp } from "react-icons/fa";
-import Slider from "@mui/material/Slider";
-import { styled } from "@mui/material/styles";
 import { VideoController } from "../controllers/video-controller";
-import { SyntheticEvent } from "react"; // Thêm import SyntheticEvent
 
 interface Props {
   controller: VideoController | null;
   setShowControls?: (value: boolean) => void;
+  isIOS?: boolean; // Thêm prop isIOS nếu cần thiết
 }
 
-const VolumeSlider = styled(Slider)({
-  color: "white",
-  height: 4,
-  padding: "0",
-  "& .MuiSlider-thumb": {
-    width: 10,
-    height: 10,
-    backgroundColor: "white",
-  },
-  "& .MuiSlider-rail": {
-    opacity: 0.3,
-    backgroundColor: "gray",
-  },
-  "& .MuiSlider-track": {
-    backgroundColor: "white",
-  },
-});
+// CSS tùy chỉnh cho slider
+const sliderStyles = `
+  .volume-slider {
+    width: 60px;
+    height: 4px;
+    background: white;
+    opacity: 1;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
 
-export const Volume: FC<Props> = ({ controller, setShowControls }) => {
+  .volume-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    background: linear-gradient(to right, white 0%, white var(--value), gray var(--value), gray 100%);
+    background-size: 100% 4px;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+    opacity: 1; /* Đảm bảo track rõ ràng */
+  }
+
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+    margin-top: -3px;
+  }
+
+  .volume-slider::-moz-range-track {
+    height: 4px;
+    background: gray;
+    opacity: 0.3;
+  }
+
+  .volume-slider::-moz-range-thumb {
+    width: 10px.
+    height: 10px;
+    background: white;
+    border: none;
+    border-radius: 50%;
+  }
+
+  .volume-slider::-moz-range-progress {
+    background: white;
+    height: 4px;
+  }
+
+  .volume-slider:focus {
+    outline: none;
+  }
+`;
+
+// Thêm style vào document
+const styleSheet = document.createElement("style");
+styleSheet.innerText = sliderStyles;
+document.head.appendChild(styleSheet);
+
+export const Volume: FC<Props> = ({ controller, setShowControls, isIOS }) => {
   const [volume, setVolume] = useState(100);
   const [muted, setMuted] = useState(false);
   const previousVolume = useRef(100);
@@ -42,13 +84,22 @@ export const Volume: FC<Props> = ({ controller, setShowControls }) => {
     }
   }, [controller]);
 
+  const handleChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newVolume = parseInt(event.target.value, 10);
+      setVolume(newVolume); // Cập nhật UI tạm thời
+    },
+    []
+  );
+
   const handleChangeCommitted = useCallback(
     (
-      event: Event | SyntheticEvent<Element, Event>,
-      value: number | number[]
+      event:
+        | React.MouseEvent<HTMLInputElement>
+        | React.TouchEvent<HTMLInputElement>
     ) => {
       if (!controller) return;
-      const newVolume = typeof value === "number" ? value : value[0];
+      const newVolume = parseInt((event.target as HTMLInputElement).value, 10);
       console.log(newVolume, "newVolume in handleChangeCommitted");
       controller.unmute();
       controller.updateVolume(newVolume);
@@ -83,16 +134,19 @@ export const Volume: FC<Props> = ({ controller, setShowControls }) => {
       <div onClick={toggleMute} style={{ cursor: "pointer", color: "white" }}>
         {muted || volume === 0 ? <FaVolumeMute /> : <FaVolumeUp />}
       </div>
-      {/* <VolumeSlider
-        min={0}
-        max={100}
-        value={volume}
-        onChangeCommitted={handleChangeCommitted}
-        onChange={(_, value) =>
-          setVolume(typeof value === "number" ? value : value[0])
-        }
-        aria-label="Volume"
-      /> */}
+      {!isIOS && (
+        <input
+          type="range"
+          className="volume-slider"
+          min={0}
+          max={100}
+          value={volume}
+          onChange={handleChange}
+          onMouseUp={handleChangeCommitted}
+          onTouchEnd={handleChangeCommitted} // Hỗ trợ iOS
+          aria-label="Volume"
+        />
+      )}
     </div>
   );
 };

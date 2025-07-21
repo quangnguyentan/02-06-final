@@ -1034,7 +1034,11 @@ const Player: FC<VideoPlayerProps> = ({
             </PlayPauseButton>
           )}
         </div>
-        <Volume controller={controller} setShowControls={setShowControls} />
+        <Volume
+          controller={controller}
+          setShowControls={setShowControls}
+          isIOS={isIOS}
+        />
         <ProgressAndTimerContainer>
           {/* <Progress controller={controller} /> */}
           {/* <Timer controller={controller} /> */}
