@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Match, MatchStatusType } from "@/types/match.types";
 import { useData } from "@/context/DataContext";
 import belt from "@/assets/user/160t1800.gif";
@@ -15,6 +15,7 @@ const VerticalAdBanner = React.lazy(
 
 const Live: React.FC = () => {
   const { slug, slugSport } = useParams<{ slug: string; slugSport: string }>();
+  const navigate = useNavigate();
   const { matchData, replayData, loading, error, initialLoadComplete } =
     useData();
   const today = React.useMemo(() => new Date(), []);
@@ -49,7 +50,10 @@ const Live: React.FC = () => {
 
   if (loading && !initialLoadComplete && !matchData?.length) return <Loader />;
   if (error) return <div>Error: {error.message}</div>;
-  if (!currentMatch) return <div>No match found</div>;
+  if (!currentMatch) {
+    navigate("/");
+    return null;
+  }
 
   return (
     <React.Suspense fallback={<Loader />}>

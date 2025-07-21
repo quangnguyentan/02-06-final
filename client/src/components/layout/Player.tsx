@@ -265,14 +265,15 @@ const Player: FC<VideoPlayerProps> = ({
         setIsLoadingHLS(true);
         if (Hls.isSupported()) {
           const hls = new Hls({
-            maxBufferLength: 5,
-            maxMaxBufferLength: 10,
-            liveSyncDurationCount: 2,
+            maxBufferLength: 15, // Tăng buffer lên 15 giây
+            maxMaxBufferLength: 30, // Tối đa 30 giây
+            liveSyncDurationCount: 4, // Tăng số segment
             lowLatencyMode: true,
             startPosition: -1,
             enableWorker: true,
             backBufferLength: 90,
           });
+          // const hls = new Hls();
           hlsRef.current = hls;
           hls.attachMedia(element);
           hls.on(Hls.Events.MEDIA_ATTACHED, () => {
@@ -287,7 +288,7 @@ const Player: FC<VideoPlayerProps> = ({
           });
 
           hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
-            if (data.timeRanges?.video && data.timeRanges.video.end(0) > 0) {
+            if (data.timeRanges?.video && data.timeRanges.video.end(0) > 3) {
               setIsBufferReady(true);
               setIsLoadingHLS(false);
             }
@@ -317,8 +318,29 @@ const Player: FC<VideoPlayerProps> = ({
         } else if (element.canPlayType("application/vnd.apple.mpegurl")) {
           element.src = videoUrl;
           element.preload = "auto";
-          setIsBufferReady(true);
           setIsLoadingHLS(false);
+          setIsBufferReady(true);
+          const handleWaiting = () => {
+            setIsLoadingHLS(true);
+            setIsBufferReady(false);
+          };
+          const handleCanPlayThrough = () => {
+            setIsLoadingHLS(false);
+            setIsBufferReady(true);
+          };
+
+          element.addEventListener("waiting", handleWaiting);
+          element.addEventListener("canplaythrough", handleCanPlayThrough); // Chỉ sử dụng canplaythrough
+          element.addEventListener("error", () => {
+            setIsLoadingHLS(false);
+            setError("Lỗi tải video HLS, vui lòng thử lại.");
+          });
+
+          return () => {
+            element.removeEventListener("waiting", handleWaiting);
+            element.removeEventListener("canplaythrough", handleCanPlayThrough);
+            element.removeEventListener("error", () => {});
+          };
         } else {
           // setError("Trình duyệt không hỗ trợ HLS.");
           setIsLoadingHLS(false);
@@ -367,20 +389,20 @@ const Player: FC<VideoPlayerProps> = ({
         }
       } else {
         hlsRef.current?.startLoad(0);
-        setTimeout(() => {
-          if (isBufferReady) {
-            controller.play();
-            setShowIcon("play");
-            setError(null);
-            setWasFirstPlayed(true);
-            setHasUserInteracted(true);
-            if (isMobile) {
-              setShowControls(false);
-            }
-          } else {
-            // setError("Đang tải video, vui lòng đợi...");
+        // setTimeout(() => {
+        if (isBufferReady) {
+          controller.play();
+          setShowIcon("play");
+          setError(null);
+          setWasFirstPlayed(true);
+          setHasUserInteracted(true);
+          if (isMobile) {
+            setShowControls(false);
           }
-        }, 500);
+        } else {
+          // setError("Đang tải video, vui lòng đợi...");
+        }
+        // }, 1000);
       }
     }
   }, [controller, videoUrl, isBufferReady, setHasUserInteracted]);
@@ -1012,7 +1034,7 @@ const Player: FC<VideoPlayerProps> = ({
             </PlayPauseButton>
           )}
         </div>
-        {<Volume controller={controller} />}
+        <Volume controller={controller} setShowControls={setShowControls} />
         <ProgressAndTimerContainer>
           {/* <Progress controller={controller} /> */}
           {/* <Timer controller={controller} /> */}
