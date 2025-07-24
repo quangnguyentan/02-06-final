@@ -264,15 +264,7 @@ const Player: FC<VideoPlayerProps> = ({
       if (isHlsSource) {
         setIsLoadingHLS(true);
         if (Hls.isSupported()) {
-          const hls = new Hls({
-            maxBufferLength: 15, // Tăng buffer lên 15 giây
-            maxMaxBufferLength: 30, // Tối đa 30 giây
-            liveSyncDurationCount: 4, // Tăng số segment
-            lowLatencyMode: true,
-            startPosition: -1,
-            enableWorker: true,
-            backBufferLength: 90,
-          });
+          const hls = new Hls();
           // const hls = new Hls();
           hlsRef.current = hls;
           hls.attachMedia(element);
