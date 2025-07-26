@@ -264,7 +264,12 @@ const Player: FC<VideoPlayerProps> = ({
       if (isHlsSource) {
         setIsLoadingHLS(true);
         if (Hls.isSupported()) {
-          const hls = new Hls();
+          const hls = new Hls({
+            liveSyncDuration: 2, // cố gắng phát cách "live edge" 2s
+            liveMaxLatencyDuration: 5, // nếu delay > 5s, sẽ jump về gần live edge
+            maxBufferLength: 10, // không buffer quá nhiều
+            maxLiveSyncPlaybackRate: 1.5, // cho phép playback nhanh để bắt kịp
+          });
           // const hls = new Hls();
           hlsRef.current = hls;
           hls.attachMedia(element);
@@ -280,7 +285,7 @@ const Player: FC<VideoPlayerProps> = ({
           });
 
           hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
-            if (data.timeRanges?.video && data.timeRanges.video.end(0) > 3) {
+            if (data.timeRanges?.video && data.timeRanges.video.end(0) > 1) {
               setIsBufferReady(true);
               setIsLoadingHLS(false);
             }
