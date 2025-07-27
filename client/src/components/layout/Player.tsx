@@ -536,6 +536,8 @@ const Player: FC<VideoPlayerProps> = ({
         const nowVNTime = new Date(nowVN).getTime();
         if (match?.status !== "LIVE" && startTimeVN > nowVNTime) {
           setCountdownActive(true);
+        } else {
+          setCountdownActive(false);
         }
       };
       element.addEventListener("error", handleError);

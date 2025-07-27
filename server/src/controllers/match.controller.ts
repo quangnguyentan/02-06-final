@@ -47,8 +47,8 @@ export const createMatch: RequestHandler[] = [
       const streamLinkImagesFromBody = Array.isArray(req.body.streamLinkImages)
         ? req.body.streamLinkImages
         : req.body.streamLinkImages
-        ? [req.body.streamLinkImages]
-        : [];
+          ? [req.body.streamLinkImages]
+          : [];
 
       // Map streamLinks with uploaded files or URLs
       const processedStreamLinks = await Promise.all(
@@ -244,8 +244,8 @@ export const updateMatch: RequestHandler[] = [
       const streamLinkImagesFromBody = Array.isArray(req.body.streamLinkImages)
         ? req.body.streamLinkImages
         : req.body.streamLinkImages
-        ? [req.body.streamLinkImages]
-        : [];
+          ? [req.body.streamLinkImages]
+          : [];
 
       // Collect old file paths for deletion
       const oldFiles: string[] = [];
@@ -314,8 +314,8 @@ export const updateMatch: RequestHandler[] = [
           body.isHot === "true"
             ? true
             : body.isHot === "false"
-            ? false
-            : match.isHot,
+              ? false
+              : match.isHot,
       };
 
       // Update match
