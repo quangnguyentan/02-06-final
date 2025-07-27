@@ -325,7 +325,6 @@ const Player: FC<VideoPlayerProps> = ({
           element.addEventListener("canplaythrough", handleCanPlayThrough); // Chỉ sử dụng canplaythrough
           element.addEventListener("error", () => {
             setIsLoadingHLS(false);
-            setError("Lỗi tải video HLS, vui lòng thử lại.");
           });
 
           return () => {
