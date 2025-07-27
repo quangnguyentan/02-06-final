@@ -280,7 +280,7 @@ const Player: FC<VideoPlayerProps> = ({
           });
 
           hls.on(Hls.Events.BUFFER_APPENDED, (event, data) => {
-            if (data.timeRanges?.video && data.timeRanges.video.end(0) > 1) {
+            if (data.timeRanges?.video && data.timeRanges.video.end(0) > 3) {
               setIsBufferReady(true);
               setIsLoadingHLS(false);
             }
