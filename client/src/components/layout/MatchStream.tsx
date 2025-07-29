@@ -77,7 +77,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
   autoPlay = false,
 }) => {
   const navigate = useNavigate();
-
+  const [selectedLabel, setSelectedLabel] = React.useState("HDNhanh");
   const { bannerData } = useData();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -229,7 +229,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </div>
           </div>
         </div>
-        <div className="relative w-full md:h-10 h-6">
+        <div className="relative w-full md:h-10 h-6 my-2">
           <div className="mt-3 flex items-center gap-2">
             {match?.streamLinks?.map((link) => {
               const commentator = link?.commentator;
@@ -308,6 +308,156 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
               Thu gọn
             </button>
           )} */}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setSelectedLabel("HDNhanh")}
+            className={`${
+              selectedLabel === "HDNhanh" ? "bg-orange-500" : "bg-[#424242]"
+            } px-2 py-2 flex items-center justify-center rounded-[5px]`}
+          >
+            {selectedLabel === "HDNhanh" ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            <span className="text-[9px] sm:text-xs text-white font-semibold">
+              HD Nhanh
+            </span>
+          </button>
+          <button
+            onClick={() => setSelectedLabel("HD")}
+            className={`${
+              selectedLabel === "HD" ? "bg-orange-500" : "bg-[#424242]"
+            } px-2 py-2 flex items-center justify-center rounded-[5px]`}
+          >
+            {selectedLabel === "HD" ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            <span className="text-[9px] sm:text-xs text-white font-semibold">
+              HD
+            </span>
+          </button>
+          <button
+            onClick={() => setSelectedLabel("SD")}
+            className={`${
+              selectedLabel === "SD" ? "bg-orange-500" : "bg-[#424242]"
+            } px-2 py-2 flex items-center justify-center rounded-[5px]`}
+          >
+            {selectedLabel === "SD" ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            <span className="text-[9px] sm:text-xs text-white font-semibold">
+              SD
+            </span>
+          </button>
+          <button
+            onClick={() => setSelectedLabel("FullHD")}
+            className={`${
+              selectedLabel === "FullHD" ? "bg-orange-500" : "bg-[#424242]"
+            } px-2 py-2 flex items-center justify-center rounded-[5px]`}
+          >
+            {selectedLabel === "FullHD" ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="white"
+                className="size-4"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            <span className="text-[9px] sm:text-xs text-white font-semibold">
+              FullHD
+            </span>
+          </button>
         </div>
         <div className="flex flex-col lg:flex-row pt-3">
           {/* Left Column: Video + Match Info + Related */}

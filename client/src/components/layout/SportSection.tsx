@@ -8,6 +8,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { Match } from "@/types/match.types";
 import { useNavigate } from "react-router-dom";
 import { useSelectedPageContext } from "@/hooks/use-context";
+import { useMediaQuery, useTheme } from "@mui/material";
 
 interface SportSectionProps {
   isSportSection?: boolean;
@@ -29,6 +30,12 @@ const SportSection: React.FC<SportSectionProps> = ({
   titleClassName = "text-lg sm:text-xl md:text-2xl font-semibold text-white",
 }) => {
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // <600px
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md")); // 600 - 899px
+  const isLaptop = useMediaQuery(theme.breakpoints.between("md", "xl")); // 900 - 1535px
+  const isDesktop = useMediaQuery(theme.breakpoints.up("xl")); // >=1536px
   const { setSelectedSportsNavbarPage } = useSelectedPageContext();
   if (!matches || matches.length === 0) {
     return null;
@@ -39,7 +46,13 @@ const SportSection: React.FC<SportSectionProps> = ({
     dots: false,
     infinite: false,
     speed: 500,
-    slidesToShow: location?.pathname.startsWith("/truc-tiep") ? 2.3 : 3.5,
+    slidesToShow: location?.pathname.startsWith("/truc-tiep")
+      ? isDesktop
+        ? 2.3
+        : 1.9
+      : isDesktop
+      ? 3.5
+      : 2.9,
     slidesToScroll: 1,
     arrows: true,
     nextArrow: <NextArrow />,

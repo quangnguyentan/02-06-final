@@ -139,11 +139,8 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
       <a
         href={targetUrl}
         onClick={(e) => {
-          // e.preventDefault();
           if ((match?.streamLinks?.length as number) > 1) {
             handleClickOpen(); // Gọi hàm để mở dialog
-          } else {
-            navigate(targetUrl); // Điều hướng đến targetUrl
           }
           setHasUserInteracted(true);
 
