@@ -19,6 +19,9 @@ export const SelectedPageProvider = ({
   initialPage?: string;
   inititalSportsNavbarPage?: string;
 }) => {
+  const [selectedLabel, setSelectedLabel] = useState(
+    localStorage.getItem("selectedLabel") || "HDNhanh"
+  ); // Initialize with default "HDNhanh"
   const [selectedPage, setSelectedPage] = useState(initialPage);
   const [selectedSportsNavbarPage, setSelectedSportsNavbarPage] = useState(
     inititalSportsNavbarPage
@@ -97,6 +100,8 @@ export const SelectedPageProvider = ({
         videoReel,
         setVideoReel,
         addVideoReel,
+        selectedLabel,
+        setSelectedLabel,
       }}
     >
       {children}

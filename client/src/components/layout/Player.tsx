@@ -218,12 +218,7 @@ const Player: FC<VideoPlayerProps> = ({
 
   // Auto-hide controls after 3 seconds on mobile (from Player)
   useEffect(() => {
-    if (
-      isMobile &&
-      playingState === "playing" &&
-      wasFirstPlayed &&
-      !isFullscreen
-    ) {
+    if (isMobile && playingState === "playing" && wasFirstPlayed) {
       controlsTimeoutRef.current = setTimeout(() => {
         setShowControls(false);
       }, 3000);
@@ -236,7 +231,7 @@ const Player: FC<VideoPlayerProps> = ({
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [playingState, wasFirstPlayed, isFullscreen]);
+  }, [playingState, wasFirstPlayed]);
 
   // Hide icon after 1 second (from Player)
   useEffect(() => {
@@ -462,13 +457,13 @@ const Player: FC<VideoPlayerProps> = ({
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
-      if (playingState === "playing" && !isFullscreen) {
+      if (playingState === "playing") {
         controlsTimeoutRef.current = setTimeout(() => {
           setShowControls(false);
         }, 3000);
       }
     }
-  }, [playingState, isFullscreen]);
+  }, [playingState]);
 
   // Touch start handler (from Player)
   const handleTouchStart = useCallback(
@@ -1008,7 +1003,7 @@ const Player: FC<VideoPlayerProps> = ({
       <StyledControls
         isIOS={isIOS}
         onClick={handleControlsClick}
-        style={{ opacity: showControls || isFullscreen ? 1 : 0 }}
+        style={{ opacity: showControls ? 1 : 0 }}
       >
         <div>
           {playingState === "paused" && (

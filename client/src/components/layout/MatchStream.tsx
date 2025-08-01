@@ -77,7 +77,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
   autoPlay = false,
 }) => {
   const navigate = useNavigate();
-  const [selectedLabel, setSelectedLabel] = React.useState("HDNhanh");
+  const { selectedLabel, setSelectedLabel } = useSelectedPageContext();
   const { bannerData } = useData();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -115,6 +115,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
 
   // Lấy streamLink từ state
   const streamLink = state?.streamLink;
+
   React.useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
@@ -311,12 +312,16 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
         </div>
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setSelectedLabel("HDNhanh")}
+            onClick={() => {
+              localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
+              setSelectedLabel("HDNhanh"); // Cập nhật context (dù không cần thiết vì reload sẽ reset)
+              window.location.reload();
+            }}
             className={`${
               selectedLabel === "HDNhanh" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
           >
-            {selectedLabel === "HDNhanh" ? (
+            {selectedLabel !== "HDNhanh" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -348,12 +353,16 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </span>
           </button>
           <button
-            onClick={() => setSelectedLabel("HD")}
+            onClick={() => {
+              localStorage.setItem("selectedLabel", "HD");
+              setSelectedLabel("HD");
+              window.location.reload();
+            }}
             className={`${
               selectedLabel === "HD" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
           >
-            {selectedLabel === "HD" ? (
+            {selectedLabel !== "HD" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -385,12 +394,16 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </span>
           </button>
           <button
-            onClick={() => setSelectedLabel("SD")}
+            onClick={() => {
+              localStorage.setItem("selectedLabel", "SD");
+              setSelectedLabel("SD");
+              window.location.reload();
+            }}
             className={`${
               selectedLabel === "SD" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
           >
-            {selectedLabel === "SD" ? (
+            {selectedLabel !== "SD" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -422,12 +435,16 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </span>
           </button>
           <button
-            onClick={() => setSelectedLabel("FullHD")}
+            onClick={() => {
+              localStorage.setItem("selectedLabel", "FullHD");
+              setSelectedLabel("FullHD");
+              window.location.reload();
+            }}
             className={`${
               selectedLabel === "FullHD" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
           >
-            {selectedLabel === "FullHD" ? (
+            {selectedLabel !== "FullHD" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"

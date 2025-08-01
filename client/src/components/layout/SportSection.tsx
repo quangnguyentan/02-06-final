@@ -88,6 +88,7 @@ const SportSection: React.FC<SportSectionProps> = ({
                 matches[0]?.sport?.name ?? ""
               );
               setSelectedSportsNavbarPage(matches?.[0]?.sport?.name ?? "");
+              localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
             }}
             className="text-xs sm:text-sm text-yellow-400 hover:text-yellow-300 flex items-center cursor-pointer"
           >

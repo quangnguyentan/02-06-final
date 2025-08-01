@@ -74,6 +74,7 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
   return (
     <div
       onClick={() => {
+        localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
         setHasUserInteracted(true);
         navigate(targetUrl);
         setSelectedSportsNavbarPage(match?.sport?.name ?? "");

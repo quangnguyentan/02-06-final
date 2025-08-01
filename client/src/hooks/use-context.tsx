@@ -37,6 +37,8 @@ export type SelectedPageProps = {
   videoReel: VideoReels[];
   setVideoReel: (list: VideoReels[]) => void;
   addVideoReel: (s: VideoReels) => void;
+  selectedLabel: string;
+  setSelectedLabel: (label: string) => void;
 };
 export const SelectedPageContext = createContext<SelectedPageProps | undefined>(
   undefined

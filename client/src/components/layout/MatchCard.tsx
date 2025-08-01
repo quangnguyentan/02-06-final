@@ -25,7 +25,7 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
   const { setSelectedSportsNavbarPage } = useSelectedPageContext();
   const { setHasUserInteracted } = useUserInteraction();
   const [open, setOpen] = React.useState(false);
-
+  const { selectedLabel, setSelectedLabel } = useSelectedPageContext();
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -139,6 +139,7 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
       <a
         href={targetUrl}
         onClick={(e) => {
+          localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
           if ((match?.streamLinks?.length as number) > 1) {
             handleClickOpen(); // Gọi hàm để mở dialog
           }
@@ -339,6 +340,8 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
       </React.Fragment>
       <div
         onClick={() => {
+          localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
+          setSelectedLabel("HDNhanh");
           if ((match?.streamLinks?.length as number) > 1) {
             handleClickOpen();
           } else {
