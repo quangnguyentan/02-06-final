@@ -29,7 +29,9 @@ const getSportIcon = (sportId: string | undefined) => {
 
 const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
   const navigate = useNavigate();
-  const { setSelectedSportsNavbarPage } = useSelectedPageContext();
+
+  const { setSelectedSportsNavbarPage, setSelectedLabel } =
+    useSelectedPageContext();
   const { setHasUserInteracted } = useUserInteraction();
 
   const isLive = match.status === "LIVE";
@@ -75,6 +77,7 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
     <div
       onClick={() => {
         localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
+        setSelectedLabel("HDNhanh");
         setHasUserInteracted(true);
         navigate(targetUrl);
         setSelectedSportsNavbarPage(match?.sport?.name ?? "");
