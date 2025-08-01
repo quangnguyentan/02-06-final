@@ -59,82 +59,82 @@ export const getColumns = (
     ),
   },
 
-  {
-    accessorKey: "homeTeam",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên đội nhà
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const teamData = row.original.homeTeam;
-      let teamName = "N/A";
-      if (
-        typeof teamData === "object" &&
-        teamData !== null &&
-        "name" in teamData
-      ) {
-        teamName = (teamData as Team).name ?? "N/A";
-      } else if (typeof teamData === "string") {
-        const foundTeam = teams.find((t) => t._id === teamData);
-        teamName = foundTeam ? foundTeam.name ?? "N/A" : "ID: " + teamData;
-      }
-      return <div className="capitalize">{teamName}</div>;
-    },
-  },
-  {
-    accessorKey: "scores",
-    header: "Kết quả đội nhà",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {row.original.scores?.homeScore ?? "N/A"}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "awayTeam",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Tên đội khách
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const teamData = row.original.awayTeam;
-      let teamName = "N/A";
-      if (
-        typeof teamData === "object" &&
-        teamData !== null &&
-        "name" in teamData
-      ) {
-        teamName = (teamData as Team).name ?? "N/A";
-      } else if (typeof teamData === "string") {
-        const foundTeam = teams.find((t) => t._id === teamData);
-        teamName = foundTeam ? foundTeam.name ?? "N/A" : "ID: " + teamData;
-      }
-      return <div className="capitalize">{teamName}</div>;
-    },
-  },
-  {
-    accessorKey: "scores",
-    header: "Kết quả đội khách",
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {row.original.scores?.awayScore ?? "N/A"}
-      </div>
-    ),
-  },
+  // {
+  //   accessorKey: "homeTeam",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Tên đội nhà
+  //         <ArrowUpDown />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => {
+  //     const teamData = row.original.homeTeam;
+  //     let teamName = "N/A";
+  //     if (
+  //       typeof teamData === "object" &&
+  //       teamData !== null &&
+  //       "name" in teamData
+  //     ) {
+  //       teamName = (teamData as Team).name ?? "N/A";
+  //     } else if (typeof teamData === "string") {
+  //       const foundTeam = teams.find((t) => t._id === teamData);
+  //       teamName = foundTeam ? foundTeam.name ?? "N/A" : "ID: " + teamData;
+  //     }
+  //     return <div className="capitalize">{teamName}</div>;
+  //   },
+  // },
+  // {
+  //   accessorKey: "scores",
+  //   header: "Kết quả đội nhà",
+  //   cell: ({ row }) => (
+  //     <div className="capitalize">
+  //       {row.original.scores?.homeScore ?? "N/A"}
+  //     </div>
+  //   ),
+  // },
+  // {
+  //   accessorKey: "awayTeam",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Tên đội khách
+  //         <ArrowUpDown />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => {
+  //     const teamData = row.original.awayTeam;
+  //     let teamName = "N/A";
+  //     if (
+  //       typeof teamData === "object" &&
+  //       teamData !== null &&
+  //       "name" in teamData
+  //     ) {
+  //       teamName = (teamData as Team).name ?? "N/A";
+  //     } else if (typeof teamData === "string") {
+  //       const foundTeam = teams.find((t) => t._id === teamData);
+  //       teamName = foundTeam ? foundTeam.name ?? "N/A" : "ID: " + teamData;
+  //     }
+  //     return <div className="capitalize">{teamName}</div>;
+  //   },
+  // },
+  // {
+  //   accessorKey: "scores",
+  //   header: "Kết quả đội khách",
+  //   cell: ({ row }) => (
+  //     <div className="capitalize">
+  //       {row.original.scores?.awayScore ?? "N/A"}
+  //     </div>
+  //   ),
+  // },
   {
     accessorKey: "league",
     header: ({ column }) => {
@@ -262,16 +262,16 @@ export const getColumns = (
     },
   },
 
-  {
-    id: "streamLabel",
-    header: "Tên luồng phát sóng",
-    accessorFn: (row) =>
-      row.streamLinks?.map((link) => link.label).join(", ") ||
-      "Không có tên luồng phát sóng",
-    cell: ({ getValue }) => (
-      <div className="capitalize">{getValue() as string}</div>
-    ),
-  },
+  // {
+  //   id: "streamLabel",
+  //   header: "Tên luồng phát sóng",
+  //   accessorFn: (row) =>
+  //     row.streamLinks?.map((link) => link.label).join(", ") ||
+  //     "Không có tên luồng phát sóng",
+  //   cell: ({ getValue }) => (
+  //     <div className="capitalize">{getValue() as string}</div>
+  //   ),
+  // },
   {
     id: "commentator",
     header: "Bình luận viên",
@@ -291,26 +291,26 @@ export const getColumns = (
       <div className="capitalize">{getValue() as string}</div>
     ),
   },
-  {
-    id: "commentatorImage",
-    header: "Ảnh bình luận viên",
-    accessorFn: (row) =>
-      row.streamLinks?.map((link) => link.commentatorImage).join(", ") ||
-      "Không có ảnh bình luận viên",
-    cell: ({ getValue }) => {
-      return getValue() !== "Không có ảnh bình luận viên" ? (
-        <div className="flex items-center justify-center">
-          <img
-            src={getValue() as string}
-            alt="Ảnh bình luận viên"
-            className="w-10 h-10 object-contain rounded-full " // Thay đổi kích thước và bo tròn nếu cần
-          />
-        </div>
-      ) : (
-        "Không có ảnh bình luận viên"
-      );
-    },
-  },
+  // {
+  //   id: "commentatorImage",
+  //   header: "Ảnh bình luận viên",
+  //   accessorFn: (row) =>
+  //     row.streamLinks?.map((link) => link.commentatorImage).join(", ") ||
+  //     "Không có ảnh bình luận viên",
+  //   cell: ({ getValue }) => {
+  //     return getValue() !== "Không có ảnh bình luận viên" ? (
+  //       <div className="flex items-center justify-center">
+  //         <img
+  //           src={getValue() as string}
+  //           alt="Ảnh bình luận viên"
+  //           className="w-10 h-10 object-contain rounded-full " // Thay đổi kích thước và bo tròn nếu cần
+  //         />
+  //       </div>
+  //     ) : (
+  //       "Không có ảnh bình luận viên"
+  //     );
+  //   },
+  // },
   {
     id: "streamUrl",
     header: "Đường dẫn luồng phát sóng",
