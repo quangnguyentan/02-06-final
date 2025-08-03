@@ -154,7 +154,7 @@ const SchedulePage: React.FC<SchedulePageProps> = ({
             />
           </div>
         )}
-        <VideoReelsHubPage />
+        {/* <VideoReelsHubPage /> */}
       </main>
     </div>
   );

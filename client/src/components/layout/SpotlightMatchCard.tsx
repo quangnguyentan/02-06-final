@@ -122,6 +122,20 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
             {match.league?.name || match.title}
           </span>
         </div>
+        <div className="flex items-center space-x-1.5 justify-center">
+          {/* {match.league?.logo ? (
+            <img
+              src={match.league.logo}
+              alt={match.league.name}
+              className="w-6 h-6 sm:w-7 sm:h-7 object-contain"
+            />
+          ) : (
+            getSportIcon(match?.sport?.slug)
+          )} */}
+          <span className="sm:text-sm text-xs font-semibold text-white truncate">
+            {match.sport?.name}
+          </span>
+        </div>
         {isLive && (
           <div className="flex items-center space-x-1">
             <LiveIcon className="w-2 h-2 text-white" />

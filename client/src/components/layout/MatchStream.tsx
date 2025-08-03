@@ -20,6 +20,7 @@ import briefcase from "@/assets/user/briefcase.png";
 import ChatPanel from "./ChatPanel";
 import FooterInfo from "../footer";
 import Player from "./Player";
+import toast from "react-hot-toast";
 interface MatchStreamPageProps {
   match: Match;
   relatedMatches: Match[];
@@ -119,6 +120,37 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
   React.useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+  const handleQualityClick = (label: string) => {
+    const now = Date.now();
+    const lastClick = Number(localStorage.getItem("lastQualityClickTime")) || 0;
+
+    // Check if the click is within 1 second of the last click
+    if (now - lastClick < 2000) {
+      toast.error("Vui lòng click chậm thôi nhé!", {
+        duration: 2000,
+        position: "top-center",
+      });
+      return;
+    }
+
+    // Prevent action if the same quality is already selected
+    if (label === selectedLabel) {
+      return;
+    }
+
+    try {
+      // Update last click time and selected label
+      localStorage.setItem("lastQualityClickTime", now.toString());
+      localStorage.setItem("selectedLabel", label);
+      setSelectedLabel(label);
+
+      // Reload the page to apply the new quality
+      window.location.reload();
+    } catch (error) {
+      console.error("Error updating quality settings:", error);
+      toast.error("Đã có lỗi xảy ra, vui lòng thử lại!");
+    }
+  };
   return (
     <div className="flex flex-col min-h-screen w-full">
       <main
@@ -312,11 +344,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
         </div>
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => {
-              localStorage.setItem("selectedLabel", "HDNhanh"); // Lưu vào localStorage
-              setSelectedLabel("HDNhanh"); // Cập nhật context (dù không cần thiết vì reload sẽ reset)
-              window.location.reload();
-            }}
+            onClick={() => handleQualityClick("HDNhanh")}
             className={`${
               selectedLabel === "HDNhanh" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
@@ -353,11 +381,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </span>
           </button>
           <button
-            onClick={() => {
-              localStorage.setItem("selectedLabel", "HD");
-              setSelectedLabel("HD");
-              window.location.reload();
-            }}
+            onClick={() => handleQualityClick("HD")}
             className={`${
               selectedLabel === "HD" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
@@ -394,11 +418,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </span>
           </button>
           <button
-            onClick={() => {
-              localStorage.setItem("selectedLabel", "SD");
-              setSelectedLabel("SD");
-              window.location.reload();
-            }}
+            onClick={() => handleQualityClick("SD")}
             className={`${
               selectedLabel === "SD" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}
@@ -435,11 +455,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </span>
           </button>
           <button
-            onClick={() => {
-              localStorage.setItem("selectedLabel", "FullHD");
-              setSelectedLabel("FullHD");
-              window.location.reload();
-            }}
+            onClick={() => handleQualityClick("FullHD")}
             className={`${
               selectedLabel === "FullHD" ? "bg-orange-500" : "bg-[#424242]"
             } px-2 py-2 flex items-center justify-center rounded-[5px]`}

@@ -47,12 +47,12 @@ const Live: React.FC = () => {
     () => matchData?.find((m) => m?.slug === slug) || null,
     [matchData, slug]
   );
-  console.log(currentMatch);
   if (loading && !initialLoadComplete && !matchData?.length) return <Loader />;
   if (error) return <div>Error: {error.message}</div>;
-  if (currentMatch === null) {
-    window.location.href = "/"; // Redirect to home if no match found
-    return null; // Redirect to home if no match found
+  if (initialLoadComplete && matchData?.length && !currentMatch) {
+    // navigate("/");
+    window.location.href = "/";
+    return null;
   }
 
   return (

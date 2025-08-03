@@ -161,7 +161,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             />
           </div>
         )}
-        <VideoReelsHubPage />
+        {/* <VideoReelsHubPage /> */}
       </main>
     </div>
   );
