@@ -83,6 +83,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const containerRef = React.useRef<HTMLDivElement>(null);
+
   const filterBanners = (
     position: Banner["position"],
     displayPage: Banner["displayPage"]
@@ -161,7 +162,6 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
         2xl:max-w-[1440px] 
         3xl:max-w-[1440px]
     "
-        ref={containerRef}
       >
         <Breadcrumbs match={match} />
         {activeBanners?.length > 0 && (

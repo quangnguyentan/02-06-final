@@ -141,7 +141,6 @@ const MainNavbar: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
   const dispatch = useAppDispatch();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const wrapperRef = React.useRef<HTMLDivElement>(null);
-
   const handleLogout = () => {
     setSelectedPage("TRANG CHỦ");
     localStorage.setItem("selectedPage", "TRANG CHỦ");
@@ -170,7 +169,9 @@ const MainNavbar: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location.pathname]);
   return (
     <>
       <div
