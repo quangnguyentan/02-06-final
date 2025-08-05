@@ -298,7 +298,7 @@ export const updateMatch: RequestHandler[] = [
       // Prepare update data
       const updateData: Partial<IMatch> = {
         title: body.title || match.title,
-        slug: body.slug || match.slug,
+        slug: match.slug,
         homeTeam: body.homeTeam || match.homeTeam,
         awayTeam: body.awayTeam || match.awayTeam,
         league: body.league || match.league,

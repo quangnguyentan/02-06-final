@@ -46,7 +46,7 @@ interface ApiMatch {
     updatedAt: string;
   }>;
   articleUrl: string;
-  isHot: boolean;
+  // isHot: boolean;
   isPinned: boolean;
   createdAt: string;
   updatedAt: string;
@@ -268,7 +268,7 @@ const processApiData = async (matches: ApiMatch[]) => {
           status: mapStatus(matchData.startTime, matchData.streams), // Corrected from startTime to matchData.startTime
           scores: { homeScore: 0, awayScore: 0 },
           streamLinks: newStreamLinks,
-          isHot: matchData.isHot,
+          // isHot: matchData.isHot,
           source: "BUGIO", // Set source to BUGIO
         });
         console.log(
@@ -295,7 +295,6 @@ const processApiData = async (matches: ApiMatch[]) => {
             match.startTime.getTime() !==
             new Date(matchData.startTime).getTime() ||
             match.status !== newStatus ||
-            match.isHot !== matchData.isHot ||
             JSON.stringify(currentStreamLinks) !== JSON.stringify(newStreamLinks);
 
           if (hasChanged) {
@@ -307,7 +306,7 @@ const processApiData = async (matches: ApiMatch[]) => {
             match.startTime = new Date(matchData.startTime);
             match.status = newStatus;
             match.streamLinks = newStreamLinks as any;
-            match.isHot = matchData.isHot;
+            // match.isHot = matchData.isHot;
             await match.save();
             console.log(
               `Updated Match: ${matchData.title} (Status: ${match.status} -> ${newStatus})`
@@ -349,6 +348,7 @@ const processApiData = async (matches: ApiMatch[]) => {
       slug: { $nin: apiMatchSlugs },
       sport: footballSport._id,
       source: "BUGIO", // Only delete BUGIO matches
+      isHot: { $ne: true },
     });
 
     if (deletedMatches.deletedCount > 0) {
