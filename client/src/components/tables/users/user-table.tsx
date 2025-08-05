@@ -120,9 +120,11 @@ export function UserTable() {
       <div className="flex items-center py-4 px-6 justify-between flex-col gap-2 sm:gap-0 sm:flex-row">
         <Input
           placeholder="Tìm kiếm bằng số điện thoại"
-          value={(table.getColumn("phone")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn("fullname")?.getFilterValue() as string) ?? ""
+          }
           onChange={(event) =>
-            table.getColumn("phone")?.setFilterValue(event.target.value)
+            table.getColumn("fullname")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

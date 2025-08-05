@@ -14,7 +14,6 @@ function App() {
   const { isLoggedIn, current, token } = useSelector(
     (state: RootState) => state.auth
   );
-  console.log(isLoggedIn);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   useEffect(() => {

@@ -72,7 +72,10 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
         `${commentator.firstname || ""} ${commentator.lastname || ""}`.trim() ||
         "Chưa cập nhật BLV"
       : "Chưa cập nhật BLV";
-
+  const commentatorImage =
+    typeof commentator === "object" && commentator?._id
+      ? commentator.avatar
+      : null;
   return (
     <div
       onClick={() => {
@@ -193,9 +196,9 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1.5 overflow-hidden w-2/4">
-            {match.streamLinks?.[0]?.commentatorImage ? (
+            {commentatorImage ? (
               <img
-                src={match.streamLinks[0].commentatorImage}
+                src={commentatorImage}
                 alt={commentatorName}
                 className="w-5 h-5 rounded-full flex-shrink-0"
               />

@@ -71,6 +71,11 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
         `${commentator.firstname || ""} ${commentator.lastname || ""}`.trim() ||
         "Chưa cập nhật BLV"
       : "Chưa cập nhật BLV";
+  const commentatorImage =
+    typeof commentator === "object" && commentator?._id
+      ? commentator.avatar
+      : null;
+
   return location.pathname.startsWith("/truc-tiep") ? (
     <>
       <React.Fragment>
@@ -439,9 +444,9 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
                   className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
                 />
               ) : (
-                match?.streamLinks?.[0]?.commentatorImage && (
+                commentatorImage && (
                   <img
-                    src={match?.streamLinks[0]?.commentatorImage}
+                    src={commentatorImage ?? ""}
                     alt={commentatorName}
                     className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
                   />

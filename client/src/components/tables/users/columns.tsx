@@ -67,6 +67,12 @@ export const getColumns = (
         <div className="font-medium">{`${user.lastname} ${user.firstname}`}</div>
       );
     },
+    filterFn: (row, columnId, filterValue) => {
+      const fullname =
+        `${row.original.firstname} ${row.original.lastname}`.toLowerCase();
+      return fullname.includes(filterValue.toLowerCase());
+    },
+    enableGlobalFilter: true,
   },
   {
     accessorKey: "role",
