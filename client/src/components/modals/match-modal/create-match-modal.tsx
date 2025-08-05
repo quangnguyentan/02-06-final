@@ -27,7 +27,7 @@ import { apiCreateMatch } from "@/services/match.services";
 import { apiGetAllTeams } from "@/services/team.services";
 import { apiGetAllLeagues } from "@/services/league.services";
 import { apiGetAllSports } from "@/services/sport.services";
-import { MatchStatusType } from "@/types/match.types";
+import { MatchStatusType, SourceMatch } from "@/types/match.types";
 import { Team } from "@/types/team.types";
 import { League } from "@/types/league.types";
 import { Sport } from "@/types/sport.types";
@@ -44,6 +44,13 @@ import { createSlug } from "@/lib/helper";
 import Select from "react-select";
 import { FixedSizeList as List } from "react-window";
 import debounce from "lodash.debounce";
+import {
+  Select as SelectComponent,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 registerLocale("vi", vi);
 setDefaultLocale("vi");
 
@@ -91,6 +98,9 @@ const formSchema = z.object({
     })
     .optional(),
   isHot: z.boolean().optional(),
+  source: z.enum(["BUGIO", "MANUAL"], {
+    required_error: "Nguồn dữ liệu là bắt buộc",
+  }),
   streamLinks: z.array(streamLinkSchema).optional(),
 });
 
@@ -539,6 +549,7 @@ export const CreateMatchModal = () => {
       status: MatchStatusType.UPCOMING,
       scores: { homeScore: 0, awayScore: 0 },
       isHot: false,
+      source: "MANUAL", // Default source
       streamLinks: [],
     },
   });
@@ -599,7 +610,7 @@ export const CreateMatchModal = () => {
       formData.append("sport", sportData._id || "");
       formData.append("startTime", values.startTime.toISOString());
       formData.append("status", values.status);
-
+      formData.append("source", values.source);
       if (
         values.scores?.homeScore !== undefined &&
         values.scores?.homeScore !== null
@@ -952,6 +963,34 @@ export const CreateMatchModal = () => {
                       />
                     </FormControl>
                     <FormLabel>Trận đấu Hot</FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="source"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nguồn dữ liệu</FormLabel>
+                    <SelectComponent
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-zinc-100 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0">
+                          <SelectValue placeholder="Chọn nguồn dữ liệu" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white text-black h-[90px]">
+                        {Object.values(SourceMatch).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type === "MANUAL" && "HOIQUANTV"}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </SelectComponent>
                     <FormMessage />
                   </FormItem>
                 )}

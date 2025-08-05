@@ -108,6 +108,7 @@ export const createMatch: RequestHandler[] = [
           : { homeScore: 0, awayScore: 0 },
         streamLinks: processedStreamLinks,
         isHot: body.isHot === "true",
+        source: body.source || "MANUAL", // Default to BUGIO if not provided
       };
 
       const newMatch = new Match(matchData);
@@ -316,6 +317,7 @@ export const updateMatch: RequestHandler[] = [
             : body.isHot === "false"
               ? false
               : match.isHot,
+        source: body.source || match.source || "MANUAL", // Default to MANUAL if not provided
       };
 
       // Update match

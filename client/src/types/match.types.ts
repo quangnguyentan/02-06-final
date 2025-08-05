@@ -27,7 +27,9 @@ export type Match = {
   };
   streamLinks?: IStreamLink[];
   isHot?: boolean;
+  source?: "BUGIO" | "MANUAL"; // New field to track source
 };
+
 export enum MatchStatusType {
   UPCOMING = "UPCOMING",
   LIVE = "LIVE",
@@ -48,4 +50,8 @@ export interface LeagueSchedule {
   name: string;
   icon: React.ReactNode; // Specific icon for the league header
   matches: Match[]; // Ensure matches are of type Match
+}
+export enum SourceMatch {
+  MANUAL = "MANUAL",
+  BUGIO = "BUGIO",
 }

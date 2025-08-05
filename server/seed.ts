@@ -201,8 +201,7 @@ const processApiData = async (matches: ApiMatch[]) => {
         ? await User.findOne({ username: matchData.commentator.nickname })
         : null;
       console.log(
-        `Commentator for ${matchData.title}: ${
-          commentator ? commentator.username : "None"
+        `Commentator for ${matchData.title}: ${commentator ? commentator.username : "None"
         }`
       );
 
@@ -270,51 +269,59 @@ const processApiData = async (matches: ApiMatch[]) => {
           scores: { homeScore: 0, awayScore: 0 },
           streamLinks: newStreamLinks,
           isHot: matchData.isHot,
+          source: "BUGIO", // Set source to BUGIO
         });
         console.log(
           `Created Match: ${matchData.title} with slug: ${matchData.slug}`
         );
       } else {
-        const newStatus = mapStatus(matchData.startTime, matchData.streams);
-        const currentStreamLinks = match.streamLinks.map((link) => ({
-          label: link.label,
-          url: link.url,
-          image: link.image,
-          commentator: link.commentator?._id,
-          commentatorImage: link.commentatorImage,
-          priority: link.priority,
-        }));
+        if (match.source === "BUGIO") {
+          const newStatus = mapStatus(matchData.startTime, matchData.streams);
+          const currentStreamLinks = match.streamLinks.map((link) => ({
+            label: link.label,
+            url: link.url,
+            image: link.image,
+            commentator: link.commentator?._id,
+            commentatorImage: link.commentatorImage,
+            priority: link.priority,
+          }));
 
-        const hasChanged =
-          match.title !== matchData.title ||
-          match.slug !== matchData.slug ||
-          !match.homeTeam.equals(homeTeam._id as any) ||
-          !match.awayTeam.equals(awayTeam._id as any) ||
-          !match.league.equals(league._id as any) ||
-          match.startTime.getTime() !==
+          const hasChanged =
+            match.title !== matchData.title ||
+            match.slug !== matchData.slug ||
+            !match.homeTeam.equals(homeTeam._id as any) ||
+            !match.awayTeam.equals(awayTeam._id as any) ||
+            !match.league.equals(league._id as any) ||
+            match.startTime.getTime() !==
             new Date(matchData.startTime).getTime() ||
-          match.status !== newStatus ||
-          match.isHot !== matchData.isHot ||
-          JSON.stringify(currentStreamLinks) !== JSON.stringify(newStreamLinks);
+            match.status !== newStatus ||
+            match.isHot !== matchData.isHot ||
+            JSON.stringify(currentStreamLinks) !== JSON.stringify(newStreamLinks);
 
-        if (hasChanged) {
-          match.title = matchData.title;
-          match.slug = matchData.slug;
-          match.homeTeam = homeTeam._id as any;
-          match.awayTeam = awayTeam._id as any;
-          match.league = league._id as any;
-          match.startTime = new Date(matchData.startTime);
-          match.status = newStatus;
-          match.streamLinks = newStreamLinks as any;
-          match.isHot = matchData.isHot;
-          await match.save();
-          console.log(
-            `Updated Match: ${matchData.title} (Status: ${match.status} -> ${newStatus})`
-          );
+          if (hasChanged) {
+            match.title = matchData.title;
+            match.slug = matchData.slug;
+            match.homeTeam = homeTeam._id as any;
+            match.awayTeam = awayTeam._id as any;
+            match.league = league._id as any;
+            match.startTime = new Date(matchData.startTime);
+            match.status = newStatus;
+            match.streamLinks = newStreamLinks as any;
+            match.isHot = matchData.isHot;
+            await match.save();
+            console.log(
+              `Updated Match: ${matchData.title} (Status: ${match.status} -> ${newStatus})`
+            );
+          } else {
+            console.log(`No changes for Match: ${matchData.title}`);
+          }
         } else {
-          console.log(`No changes for Match: ${matchData.title}`);
+          console.log(
+            `Skipping update for manual match: ${matchData.title} (slug: ${matchData.slug})`
+          );
         }
       }
+
 
       let replay = await Replay.findOne({ slug: `${matchData.slug}-replay` });
       if (!replay) {
@@ -341,6 +348,7 @@ const processApiData = async (matches: ApiMatch[]) => {
     const deletedMatches = await Match.deleteMany({
       slug: { $nin: apiMatchSlugs },
       sport: footballSport._id,
+      source: "BUGIO", // Only delete BUGIO matches
     });
 
     if (deletedMatches.deletedCount > 0) {

@@ -37,6 +37,7 @@ export interface IMatch extends Document {
   };
   streamLinks: IStreamLink[];
   isHot: boolean;
+  source: "BUGIO" | "MANUAL"; // New field to track source
 }
 
 const matchSchema = new Schema<IMatch>(
@@ -70,6 +71,7 @@ const matchSchema = new Schema<IMatch>(
       },
     ],
     isHot: { type: Boolean, default: false },
+    source: { type: String, enum: ["BUGIO", "MANUAL"], required: true }, // Required source field
   },
   {
     timestamps: true,

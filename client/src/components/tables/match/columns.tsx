@@ -261,7 +261,15 @@ export const getColumns = (
       );
     },
   },
-
+  {
+    accessorKey: "source",
+    header: "Nguồn dữ liệu",
+    cell: ({ row }) => (
+      <div className="capitalize">
+        {row.getValue("source") === "MANUAL" ? "HOIQUANTV" : "BUGIO"}
+      </div>
+    ),
+  },
   // {
   //   id: "streamLabel",
   //   header: "Tên luồng phát sóng",
