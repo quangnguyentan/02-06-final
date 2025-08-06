@@ -74,7 +74,7 @@ const ChatPanel: React.FC<{ isChatVisible?: boolean }> = ({
   };
 
   return (
-    <div className="bg-slate-800 text-white rounded-lg shadow-xl flex flex-col h-full">
+    <div className="bg-slate-800 text-white rounded-lg shadow-xl flex flex-col h-[400px] sm:h-[600px]">
       {/* Tabs */}
       <div className="flex border-b border-slate-700">
         <button

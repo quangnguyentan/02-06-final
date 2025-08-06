@@ -228,7 +228,7 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
 
         <div className="p-2 sm:p-3 flex-grow flex flex-col items-center relative z-10">
           <div className="flex items-center justify-around w-full mb-2">
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center w-1/3">
               <img
                 src={match.homeTeam?.logo || ""}
                 alt={match.homeTeam?.name}
@@ -239,7 +239,7 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
               </span>
             </div>
 
-            <div className="text-center">
+            <div className="text-center w-1/3 flex flex-col items-center justify-center">
               {match.status && match.scores ? (
                 <div className="text-lg sm:text-xl font-bold text-white">
                   {match.scores.homeScore} - {match.scores.awayScore}
@@ -254,7 +254,7 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
               </div>
             </div>
 
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center w-1/3">
               <img
                 src={match.awayTeam?.logo || ""}
                 alt={match.awayTeam?.name}

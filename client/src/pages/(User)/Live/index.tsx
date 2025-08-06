@@ -61,7 +61,7 @@ const Live: React.FC = () => {
         <div className="flex">
           <VerticalAdBanner position="left" imageUrl={belt} />
           <MatchStreamPage
-            match={currentMatch}
+            match={currentMatch || {}}
             relatedMatches={relatedMatches}
             replaySuggestions={replaySuggestions}
             autoPlay={true}

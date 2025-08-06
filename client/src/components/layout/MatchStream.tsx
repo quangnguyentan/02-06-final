@@ -262,7 +262,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </div>
           </div>
         </div>
-        <div className="relative w-full md:h-10 h-6 my-2">
+        <div className="relative w-full md:h-10 h-6 mt-2 mb-5 sm:mb-2">
           <div className="mt-3 flex items-center gap-2">
             {match?.streamLinks?.map((link) => {
               const commentator = link?.commentator;
@@ -296,14 +296,14 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
                         streamLink?.commentator?.username
                           ? streamLink?.commentator?.username ===
                             commentatorName
-                            ? "bg-orange-500 text-white px-2 py-0.5 md:py-1 rounded-[4px] flex items-center gap-2"
-                            : "bg-[#343434] text-white px-2 py-0.5 md:py-1 rounded-[4px] flex items-center gap-2"
-                          : "bg-orange-500 text-white px-2 py-0.5 md:py-1 rounded-[4px] flex items-center gap-2"
+                            ? "bg-orange-500 text-white px-2 py-1 md:py-1 rounded-[4px] flex items-center gap-2"
+                            : "bg-[#343434] text-white px-2 py-1 md:py-1 rounded-[4px] flex items-center gap-2"
+                          : "bg-orange-500 text-white px-2 py-1 md:py-1 rounded-[4px] flex items-center gap-2"
                       }
                     >
                       <img
                         src={commentatorImage}
-                        className="w-5 md:w-8 h-5 md:h-8 object-cover rounded-full"
+                        className="w-7 md:w-8 h-7 md:h-8 object-cover rounded-full"
                         alt=""
                       />
                       <span className="font-medium md:font-bold text-[9px] md:text-xs">
@@ -315,7 +315,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
               );
             })}
           </div>
-          <div className="absolute top-2 right-0 md:right-0 z-50 hidden md:block">
+          <div className="absolute top-[58px] right-0 md:right-0 z-50 hidden md:block">
             <button
               onClick={toggleChat}
               className="bg-[#343434] text-white px-4 py-1 rounded-[4px] transition flex items-center gap-1"
@@ -557,7 +557,7 @@ const MatchStreamPage: React.FC<MatchStreamPageProps> = ({
             </button> */}
           </div>
           <div className="lg:w-1/3 flex-shrink-0 relative">
-            <div className="relative w-full h-[600px]">
+            <div className="relative w-full h-[400px] sm:h-[600px]">
               {!isChatVisible && (
                 <button
                   onClick={toggleChat}

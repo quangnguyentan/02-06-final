@@ -94,7 +94,7 @@ const processApiData = async (matches: ApiMatch[]) => {
   try {
     // Collect all slugs from API matches
     const apiMatchSlugs = matches.map((match) => match.slug);
-
+    const apiMatchTitles = matches.map((match) => match.title); // Thu thập danh sách title từ API
     let footballSport: ISport | null = await Sport.findOne({
       slug: "football",
     });
@@ -201,7 +201,8 @@ const processApiData = async (matches: ApiMatch[]) => {
         ? await User.findOne({ username: matchData.commentator.nickname })
         : null;
       console.log(
-        `Commentator for ${matchData.title}: ${commentator ? commentator.username : "None"
+        `Commentator for ${matchData.title}: ${
+          commentator ? commentator.username : "None"
         }`
       );
 
@@ -293,9 +294,10 @@ const processApiData = async (matches: ApiMatch[]) => {
             !match.awayTeam.equals(awayTeam._id as any) ||
             !match.league.equals(league._id as any) ||
             match.startTime.getTime() !==
-            new Date(matchData.startTime).getTime() ||
+              new Date(matchData.startTime).getTime() ||
             match.status !== newStatus ||
-            JSON.stringify(currentStreamLinks) !== JSON.stringify(newStreamLinks);
+            JSON.stringify(currentStreamLinks) !==
+              JSON.stringify(newStreamLinks);
 
           if (hasChanged) {
             match.title = matchData.title;
@@ -321,7 +323,6 @@ const processApiData = async (matches: ApiMatch[]) => {
         }
       }
 
-
       let replay = await Replay.findOne({ slug: `${matchData.slug}-replay` });
       if (!replay) {
         replay = await Replay.create({
@@ -344,13 +345,29 @@ const processApiData = async (matches: ApiMatch[]) => {
     }
 
     // Delete matches not present in the API response, only for football sport
-    const deletedMatches = await Match.deleteMany({
+    const matchesToDelete = await Match.find({
       slug: { $nin: apiMatchSlugs },
+      title: { $nin: apiMatchTitles }, // Kiểm tra cả title
       sport: footballSport._id,
-      source: "BUGIO", // Only delete BUGIO matches
-      isHot: { $ne: true },
+      source: "BUGIO", // Chỉ xóa các trận từ BUGIO
     });
+    for (const match of matchesToDelete) {
+      if (match.isHot) {
+        match.isHot = false;
+        await match.save();
+        console.log(
+          `Set isHot to false for match: ${match.title} (slug: ${match.slug})`
+        );
+      }
+    }
 
+    // Thu thập ID của các trận cần xóa
+    const deleteMatchIds = matchesToDelete.map((match) => match._id);
+
+    // Xóa các trận đấu được chọn
+    const deletedMatches = await Match.deleteMany({
+      _id: { $in: deleteMatchIds },
+    });
     if (deletedMatches.deletedCount > 0) {
       console.log(
         `Deleted ${deletedMatches.deletedCount} stale football matches`

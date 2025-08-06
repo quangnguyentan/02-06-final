@@ -194,7 +194,7 @@ const MainNavbar: React.FC<{ onOpenMenu: () => void }> = ({ onOpenMenu }) => {
           }}
           src={logo}
           alt="HoiQuanTV Logo"
-          className="h-[50px] md:h-[70px] mr-2 md:mr-6 w-32 md:w-36 object-cover cursor-pointer"
+          className="mr-2 md:mr-6 w-32 md:w-36 object-cover cursor-pointer"
         />
 
         <div>
