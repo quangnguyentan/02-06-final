@@ -279,7 +279,7 @@ const SpotlightMatchCard: React.FC<{ match: Match }> = ({ match }) => {
                 <img
                   src={commentatorImage}
                   alt={commentatorName}
-                  className="w-5 h-5 rounded-full flex-shrink-0"
+                  className="w-7 h-7 rounded-full flex-shrink-0"
                 />
               ) : (
                 <UserIcon className="w-5 h-5 text-slate-500 flex-shrink-0" />

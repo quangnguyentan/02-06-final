@@ -234,11 +234,11 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
         >
           <div className="flex items-center space-x-2 w-full sm:w-auto justify-between">
             <div className="flex items-center gap-2">
-              {match?.streamLinks?.[0]?.commentatorImage && (
+              {commentatorImage && (
                 <img
-                  src={match?.streamLinks[0]?.commentatorImage}
+                  src={commentatorImage}
                   alt={commentatorName}
-                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
+                  className="w-7 h-7 sm:w-6 sm:h-6 rounded-full"
                 />
               )}
               {match?.streamLinks?.[0]?.commentator && (
@@ -441,14 +441,14 @@ const MatchCard: React.FC<{ match: Match; small?: boolean }> = ({
                 <img
                   src={avatar}
                   alt={commentatorName}
-                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
+                  className="w-7 h-7 sm:w-6 sm:h-6 rounded-full"
                 />
               ) : (
                 commentatorImage && (
                   <img
                     src={commentatorImage ?? ""}
                     alt={commentatorName}
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-full"
+                    className="w-7 h-7 sm:w-6 sm:h-6 rounded-full"
                   />
                 )
               )}
