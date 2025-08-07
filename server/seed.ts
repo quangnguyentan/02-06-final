@@ -347,7 +347,6 @@ const processApiData = async (matches: ApiMatch[]) => {
     // Delete matches not present in the API response, only for football sport
     const matchesToDelete = await Match.find({
       slug: { $nin: apiMatchSlugs },
-      title: { $nin: apiMatchTitles }, // Kiểm tra cả title
       sport: footballSport._id,
       source: "BUGIO", // Chỉ xóa các trận từ BUGIO
     });

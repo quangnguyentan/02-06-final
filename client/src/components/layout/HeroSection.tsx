@@ -2,6 +2,10 @@ import * as React from "react";
 import banner_container_after from "@/assets/user/bg-topz-min.jpg";
 import { ChevronLeftIcon, ChevronRightIcon } from "./Icon";
 import banner_hoiquan from "@/assets/user/Anh bia hoi quan.png";
+import banner_hoiquan_bi_a from "@/assets/user/Anh bia hoi quan bi a.png";
+import banner_hoiquan_bong_chuyen from "@/assets/user/Anh bia hoi quan bong chuyen.png";
+import banner_hoiquan_lien_minh from "@/assets/user/Anh bia hoi quan lien minh.png";
+
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -48,12 +52,17 @@ const HeroSection: React.FC = () => {
             className="lg:w-full max-sm:w-full sm:w-full h-full md:w-full max-w-full mx-auto drop-shadow-lg object-cover"
           />
           <img
-            src={banner_hoiquan}
+            src={banner_hoiquan_bong_chuyen}
             alt="banner_container"
             className="lg:w-full max-sm:w-full sm:w-full h-full md:w-full max-w-full mx-auto drop-shadow-lg object-cover"
           />
           <img
-            src={banner_hoiquan}
+            src={banner_hoiquan_bi_a}
+            alt="banner_container"
+            className="lg:w-full max-sm:w-full sm:w-full h-full md:w-full max-w-full mx-auto drop-shadow-lg object-cover"
+          />
+          <img
+            src={banner_hoiquan_lien_minh}
             alt="banner_container"
             className="lg:w-full max-sm:w-full sm:w-full h-full md:w-full max-w-full mx-auto drop-shadow-lg object-cover"
           />
