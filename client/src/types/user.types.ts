@@ -1,3 +1,10 @@
+interface IStreamLink {
+  label?: string;
+  url?: string;
+  image?: string; // Hình ảnh đại diện cho link stream
+  commentator?: User | string;
+  priority?: number;
+}
 export type User = {
   _id?: string;
   typeLogin?: string; // Required
@@ -22,6 +29,7 @@ export type User = {
   passwordChangedAt?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  streamLinks?: IStreamLink[]; // Thêm trường mới
 };
 export enum RoleType {
   USER = "USER",

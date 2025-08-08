@@ -2,6 +2,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +35,7 @@ import { apiUpdateMatch } from "@/services/match.services";
 import { apiGetAllTeams } from "@/services/team.services";
 import { apiGetAllLeagues } from "@/services/league.services";
 import { apiGetAllSports } from "@/services/sport.services";
-import { MatchStatusType, SourceMatch } from "@/types/match.types";
+import { SourceMatch, Match } from "@/types/match.types";
 import { Team } from "@/types/team.types";
 import { League } from "@/types/league.types";
 import { Sport } from "@/types/sport.types";
@@ -50,7 +51,6 @@ import { createSlug } from "@/lib/helper";
 import Select from "react-select";
 import { FixedSizeList as List } from "react-window";
 import debounce from "lodash.debounce";
-import { Banner } from "@/types/banner.types";
 
 registerLocale("vi", vi);
 setDefaultLocale("vi");
@@ -83,9 +83,7 @@ const formSchema = z.object({
   league: z.string().min(1, { message: "Giải đấu là bắt buộc" }),
   sport: z.string().min(1, { message: "Môn thể thao là bắt buộc" }),
   startTime: z.date({ required_error: "Ngày bắt đầu là bắt buộc" }),
-  status: z.enum(Object.values(MatchStatusType) as [string, ...string[]], {
-    required_error: "Trạng thái là bắt buộc",
-  }),
+  isLive: z.boolean().optional(),
   scores: z
     .object({
       homeScore: z.coerce
@@ -105,7 +103,6 @@ const formSchema = z.object({
   streamLinks: z.array(streamLinkSchema).optional(),
 });
 
-// Custom Option component for react-select with virtualization
 const MenuList = ({ options, children, maxHeight, getValue }: any) => {
   const [value] = getValue();
   const height = 35;
@@ -124,7 +121,6 @@ const MenuList = ({ options, children, maxHeight, getValue }: any) => {
   );
 };
 
-// Custom styles for react-select to match Tailwind CSS
 const customStyles = {
   control: (provided: any) => ({
     ...provided,
@@ -548,7 +544,7 @@ export const EditMatchModal = () => {
       league: "",
       sport: "",
       startTime: new Date(),
-      status: MatchStatusType.UPCOMING,
+      isLive: false,
       scores: { homeScore: 0, awayScore: 0 },
       isHot: false,
       source: "MANUAL",
@@ -574,9 +570,9 @@ export const EditMatchModal = () => {
           apiGetAllSports(),
           apiGetAllUser(),
         ]);
-        setTeams(teamsRes.data);
-        setLeagues(leaguesRes.data);
-        setSports(sportsRes.data);
+        setTeams(teamsRes.data || []);
+        setLeagues(leaguesRes.data || []);
+        setSports(sportsRes.data || []);
         setUsers(
           usersRes.data?.rs?.filter(
             (user: User) => user?.role === "COMMENTATOR"
@@ -602,7 +598,7 @@ export const EditMatchModal = () => {
         startTime: matchToEdit.startTime
           ? new Date(matchToEdit.startTime)
           : new Date(),
-        status: matchToEdit.status || MatchStatusType.UPCOMING,
+        isLive: matchToEdit.status === "LIVE",
         scores: {
           homeScore: matchToEdit.scores?.homeScore ?? 0,
           awayScore: matchToEdit.scores?.awayScore ?? 0,
@@ -630,7 +626,7 @@ export const EditMatchModal = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       if (!matchToEdit?._id) {
-        toast.error("Không tìm thấy ID trận đấu để cập nhật");
+        toast.error("Không tìm thấy ID trận đấu");
         return;
       }
 
@@ -652,9 +648,8 @@ export const EditMatchModal = () => {
       formData.append("league", leagueData._id || "");
       formData.append("sport", sportData._id || "");
       formData.append("startTime", values.startTime.toISOString());
-      formData.append("status", values.status);
+      formData.append("status", values.isLive ? "LIVE" : "UPCOMING");
       formData.append("source", values.source);
-
       if (
         values.scores?.homeScore !== undefined &&
         values.scores?.homeScore !== null
@@ -704,12 +699,13 @@ export const EditMatchModal = () => {
       const res = await apiUpdateMatch(matchToEdit._id, formData);
       if (res?.data) {
         toast.success(`Đã cập nhật ${values.title} thành công`);
-        onClose();
-        const updatedList = match?.map((item: Banner) =>
-          item._id === res.data._id ? res.data : item
+        setMatch(
+          match?.map((item: Match) =>
+            item._id === res.data._id ? (res.data as Match) : item
+          )
         );
-        setMatch(updatedList);
         setSelectedPage("Trận đấu");
+        onClose();
         form.reset();
       }
     } catch (error: any) {
@@ -722,6 +718,10 @@ export const EditMatchModal = () => {
 
   const handleClose = () => {
     form.reset();
+    setHomeTeamSearch("");
+    setAwayTeamSearch("");
+    setLeagueSearch("");
+    setSportSearch("");
     onClose();
   };
 
@@ -730,7 +730,7 @@ export const EditMatchModal = () => {
       <DialogContent className="bg-white text-black p-0 overflow-y-auto max-h-[90vh] md:max-w-[60%] max-w-[90%]">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
-            Chỉnh sửa trận đấu
+            Sửa trận đấu
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -909,34 +909,17 @@ export const EditMatchModal = () => {
               />
               <FormField
                 control={form.control}
-                name="status"
+                name="isLive"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trạng thái</FormLabel>
+                  <FormItem className="flex items-center space-x-2">
                     <FormControl>
-                      <Select
-                        options={Object.values(MatchStatusType).map(
-                          (status) => ({
-                            value: status,
-                            label: status,
-                          })
-                        )}
-                        value={Object.values(MatchStatusType)
-                          .map((status) => ({ value: status, label: status }))
-                          .find((option) => option.value === field.value)}
-                        onChange={(option) =>
-                          field.onChange(option?.value || "")
-                        }
-                        placeholder="Chọn trạng thái"
-                        isDisabled={isLoading}
-                        isClearable
-                        isSearchable={false}
-                        noOptionsMessage={() => "Không tìm thấy trạng thái"}
-                        components={{ MenuList }}
-                        styles={customStyles}
-                        aria-label="Trạng thái"
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isLoading}
                       />
                     </FormControl>
+                    <FormLabel>Trạng thái LIVE</FormLabel>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -1025,7 +1008,7 @@ export const EditMatchModal = () => {
                       <SelectContent className="bg-white text-black h-[90px]">
                         {Object.values(SourceMatch).map((type) => (
                           <SelectItem key={type} value={type}>
-                            {type === "MANUAL" ? "HOIQUANTV" : "BUGIO"}
+                            {type === "MANUAL" ? "HOIQUANTV" : type}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1084,7 +1067,7 @@ export const EditMatchModal = () => {
                 type="submit"
                 className="bg-blue-600 text-white hover:bg-blue-700 rounded-[4px]"
               >
-                Cập nhật
+                Lưu
               </Button>
             </DialogFooter>
           </form>

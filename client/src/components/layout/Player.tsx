@@ -557,7 +557,7 @@ const Player: FC<VideoPlayerProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [controller, handlePlay, handlePause, handleToggleFullscreen]);
 
-  if (!videoUrl || videoUrl === "undefined") {
+  if (!videoUrl || videoUrl === "undefined" || match?.status === "UPCOMING") {
     return (
       <div className="relative w-full aspect-video bg-black text-white rounded-lg shadow-2xl flex items-center justify-center">
         <div

@@ -1,6 +1,13 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+
+export interface IStreamLink {
+  label: string;
+  url: string;
+  image?: string;
+  priority?: number;
+}
 export interface IUser extends Document {
   typeLogin: string;
   id: string;
@@ -17,6 +24,7 @@ export interface IUser extends Document {
   level: number;
   address: string;
   gender: "MALE" | "FEMALE" | "OTHER";
+  streamLinks: IStreamLink[]; // Thêm trường mới
   isCorrectPassword(password: string): Promise<boolean>;
   createPasswordChangedToken(): string;
   passwordResetToken?: string;
@@ -48,6 +56,14 @@ const UserSchema = new Schema<IUser>(
     passwordResetToken: { type: String },
     passwordResetExpires: { type: Date },
     passwordChangedAt: { type: String },
+    streamLinks: [
+      {
+        label: { type: String },
+        url: { type: String },
+        image: { type: String, default: "" },
+        priority: { type: Number, default: 1 },
+      },
+    ],
   },
   {
     timestamps: true,

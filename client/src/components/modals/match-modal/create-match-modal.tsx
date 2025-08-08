@@ -1,6 +1,7 @@
 import * as z from "zod";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch"; // Thêm Switch từ Shadcn
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,7 @@ import { apiCreateMatch } from "@/services/match.services";
 import { apiGetAllTeams } from "@/services/team.services";
 import { apiGetAllLeagues } from "@/services/league.services";
 import { apiGetAllSports } from "@/services/sport.services";
-import { MatchStatusType, SourceMatch } from "@/types/match.types";
+import { SourceMatch } from "@/types/match.types";
 import { Team } from "@/types/team.types";
 import { League } from "@/types/league.types";
 import { Sport } from "@/types/sport.types";
@@ -82,9 +83,7 @@ const formSchema = z.object({
   league: z.string().min(1, { message: "Giải đấu là bắt buộc" }),
   sport: z.string().min(1, { message: "Môn thể thao là bắt buộc" }),
   startTime: z.date({ required_error: "Ngày bắt đầu là bắt buộc" }),
-  status: z.enum(Object.values(MatchStatusType) as [string, ...string[]], {
-    required_error: "Trạng thái là bắt buộc",
-  }),
+  isLive: z.boolean().optional(), // Thêm trường isLive
   scores: z
     .object({
       homeScore: z.coerce
@@ -104,7 +103,6 @@ const formSchema = z.object({
   streamLinks: z.array(streamLinkSchema).optional(),
 });
 
-// Custom Option component for react-select with virtualization
 const MenuList = ({ options, children, maxHeight, getValue }: any) => {
   const [value] = getValue();
   const height = 35;
@@ -123,7 +121,6 @@ const MenuList = ({ options, children, maxHeight, getValue }: any) => {
   );
 };
 
-// Custom styles for react-select to match Tailwind CSS
 const customStyles = {
   control: (provided: any) => ({
     ...provided,
@@ -193,6 +190,7 @@ const StreamLinkField: React.FC<StreamLinkFieldProps> = ({
       users.map((user) => ({
         value: user._id ?? "",
         label: user.username ?? "",
+        streamLinks: user.streamLinks || [],
       })),
     [users]
   );
@@ -204,6 +202,22 @@ const StreamLinkField: React.FC<StreamLinkFieldProps> = ({
       ),
     [commentatorOptions, commentatorSearch]
   );
+
+  const handleCommentatorChange = (option: any) => {
+    form.setValue(`streamLinks.${index}.commentator`, option?.value || "");
+    if (option?.streamLinks?.length > 0) {
+      const defaultLink = option.streamLinks[0];
+      form.setValue(`streamLinks.${index}.url`, defaultLink.url || "");
+      form.setValue(`streamLinks.${index}.label`, defaultLink.label || "");
+      form.setValue(`streamLinks.${index}.imageUrl`, defaultLink.image || "");
+      form.setValue(`streamLinks.${index}.priority`, defaultLink.priority || 1);
+    } else {
+      form.setValue(`streamLinks.${index}.url`, "");
+      form.setValue(`streamLinks.${index}.label`, "");
+      form.setValue(`streamLinks.${index}.imageUrl`, "");
+      form.setValue(`streamLinks.${index}.priority`, 1);
+    }
+  };
 
   const onDropImage = useCallback(
     (acceptedFiles: File[], fileRejections: any[], event: any) => {
@@ -409,7 +423,7 @@ const StreamLinkField: React.FC<StreamLinkFieldProps> = ({
                 value={filteredCommentatorOptions.find(
                   (option) => option.value === field.value
                 )}
-                onChange={(option) => field.onChange(option?.value || "")}
+                onChange={handleCommentatorChange}
                 onInputChange={debouncedSetCommentatorSearch}
                 placeholder="Chọn bình luận viên"
                 isDisabled={isLoading}
@@ -546,10 +560,10 @@ export const CreateMatchModal = () => {
       league: "",
       sport: "",
       startTime: new Date(),
-      status: MatchStatusType.UPCOMING,
+      isLive: false, // Mặc định tắt
       scores: { homeScore: 0, awayScore: 0 },
       isHot: false,
-      source: "MANUAL", // Default source
+      source: "MANUAL",
       streamLinks: [],
     },
   });
@@ -609,7 +623,7 @@ export const CreateMatchModal = () => {
       formData.append("league", leagueData._id || "");
       formData.append("sport", sportData._id || "");
       formData.append("startTime", values.startTime.toISOString());
-      formData.append("status", values.status);
+      formData.append("status", values.isLive ? "LIVE" : "UPCOMING");
       formData.append("source", values.source);
       if (
         values.scores?.homeScore !== undefined &&
@@ -870,34 +884,17 @@ export const CreateMatchModal = () => {
               />
               <FormField
                 control={form.control}
-                name="status"
+                name="isLive"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Trạng thái</FormLabel>
+                  <FormItem className="flex items-center space-x-2">
                     <FormControl>
-                      <Select
-                        options={Object.values(MatchStatusType).map(
-                          (status) => ({
-                            value: status,
-                            label: status,
-                          })
-                        )}
-                        value={Object.values(MatchStatusType)
-                          .map((status) => ({ value: status, label: status }))
-                          .find((option) => option.value === field.value)}
-                        onChange={(option) =>
-                          field.onChange(option?.value || "")
-                        }
-                        placeholder="Chọn trạng thái"
-                        isDisabled={isLoading}
-                        isClearable
-                        isSearchable={false}
-                        noOptionsMessage={() => "Không tìm thấy trạng thái"}
-                        components={{ MenuList }}
-                        styles={customStyles}
-                        aria-label="Trạng thái"
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isLoading}
                       />
                     </FormControl>
+                    <FormLabel>Trạng thái LIVE</FormLabel>
                     <FormMessage />
                   </FormItem>
                 )}

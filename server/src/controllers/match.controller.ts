@@ -47,8 +47,8 @@ export const createMatch: RequestHandler[] = [
       const streamLinkImagesFromBody = Array.isArray(req.body.streamLinkImages)
         ? req.body.streamLinkImages
         : req.body.streamLinkImages
-          ? [req.body.streamLinkImages]
-          : [];
+        ? [req.body.streamLinkImages]
+        : [];
 
       // Map streamLinks with uploaded files or URLs
       const processedStreamLinks = await Promise.all(
@@ -64,7 +64,52 @@ export const createMatch: RequestHandler[] = [
           } else if (streamLinkImagesFromBody[index]) {
             imageUrl = streamLinkImagesFromBody[index];
           }
+          if (link.commentator && link.url) {
+            const user = await User.findById(link.commentator);
+            if (user) {
+              // Kiểm tra xem link đã tồn tại chưa (dựa trên url)
+              const existingLink = user.streamLinks?.find(
+                (existing) => existing.url === link.url
+              );
 
+              if (!existingLink) {
+                // Chỉ thêm link nếu chưa tồn tại
+                await User.findByIdAndUpdate(
+                  link.commentator,
+                  {
+                    $addToSet: {
+                      streamLinks: {
+                        label: link.label,
+                        url: link.url,
+                        image: imageUrl || undefined,
+                        priority: link.priority ? Number(link.priority) : 1,
+                      },
+                    },
+                  },
+                  { new: true }
+                );
+              } else {
+                // (Tùy chọn) Cập nhật thông tin link nếu cần
+                await User.findByIdAndUpdate(
+                  link.commentator,
+                  {
+                    $set: {
+                      "streamLinks.$[elem].label": link.label,
+                      "streamLinks.$[elem].image":
+                        imageUrl || existingLink.image,
+                      "streamLinks.$[elem].priority": link.priority
+                        ? Number(link.priority)
+                        : existingLink.priority || 1,
+                    },
+                  },
+                  {
+                    arrayFilters: [{ "elem.url": link.url }],
+                    new: true,
+                  }
+                );
+              }
+            }
+          }
           const commentator = link.commentator
             ? await User.findById(link.commentator)
             : undefined;
@@ -100,7 +145,7 @@ export const createMatch: RequestHandler[] = [
         league: body.league,
         sport: body.sport,
         startTime: body.startTime ? new Date(body.startTime) : undefined,
-        status: hasValidStreamLinks ? MatchStatus.LIVE : MatchStatus.UPCOMING,
+        status: body.status || MatchStatus.UPCOMING, // Use provided status or default to UPCOMING
         scores: body.scores
           ? typeof body.scores === "string"
             ? JSON.parse(body.scores)
@@ -245,8 +290,8 @@ export const updateMatch: RequestHandler[] = [
       const streamLinkImagesFromBody = Array.isArray(req.body.streamLinkImages)
         ? req.body.streamLinkImages
         : req.body.streamLinkImages
-          ? [req.body.streamLinkImages]
-          : [];
+        ? [req.body.streamLinkImages]
+        : [];
 
       // Collect old file paths for deletion
       const oldFiles: string[] = [];
@@ -275,6 +320,52 @@ export const updateMatch: RequestHandler[] = [
             imageUrl = match.streamLinks?.[index]?.image; // Keep existing image if not updated
           }
 
+          if (link.commentator && link.url) {
+            const user = await User.findById(link.commentator);
+            if (user) {
+              // Kiểm tra xem link đã tồn tại chưa (dựa trên url)
+              const existingLink = user.streamLinks?.find(
+                (existing) => existing.url === link.url
+              );
+
+              if (!existingLink) {
+                // Chỉ thêm link nếu chưa tồn tại
+                await User.findByIdAndUpdate(
+                  link.commentator,
+                  {
+                    $addToSet: {
+                      streamLinks: {
+                        label: link.label,
+                        url: link.url,
+                        image: imageUrl || undefined,
+                        priority: link.priority ? Number(link.priority) : 1,
+                      },
+                    },
+                  },
+                  { new: true }
+                );
+              } else {
+                // (Tùy chọn) Cập nhật thông tin link nếu cần
+                await User.findByIdAndUpdate(
+                  link.commentator,
+                  {
+                    $set: {
+                      "streamLinks.$[elem].label": link.label,
+                      "streamLinks.$[elem].image":
+                        imageUrl || existingLink.image,
+                      "streamLinks.$[elem].priority": link.priority
+                        ? Number(link.priority)
+                        : existingLink.priority || 1,
+                    },
+                  },
+                  {
+                    arrayFilters: [{ "elem.url": link.url }],
+                    new: true,
+                  }
+                );
+              }
+            }
+          }
           const commentator = link.commentator
             ? await User.findById(link.commentator)
             : undefined;
@@ -304,7 +395,7 @@ export const updateMatch: RequestHandler[] = [
         league: body.league || match.league,
         sport: body.sport || match.sport,
         startTime: body.startTime ? new Date(body.startTime) : match.startTime,
-        status: hasValidStreamLinks ? MatchStatus.LIVE : MatchStatus.UPCOMING,
+        status: body.status || match.status, // Use provided status or keep existing
         scores: body.scores
           ? typeof body.scores === "string"
             ? JSON.parse(body.scores)
@@ -315,8 +406,8 @@ export const updateMatch: RequestHandler[] = [
           body.isHot === "true"
             ? true
             : body.isHot === "false"
-              ? false
-              : match.isHot,
+            ? false
+            : match.isHot,
         source: body.source || match.source || "MANUAL", // Default to MANUAL if not provided
       };
 
