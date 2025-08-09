@@ -15,7 +15,7 @@ function App() {
   const { isLoggedIn, current, token } = useSelector(
     (state: RootState) => state.auth
   );
-  const { loading, initialLoadComplete } = useData();
+  const { loading, bannerData, matchData, sportData, replayData } = useData();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -38,7 +38,7 @@ function App() {
     if (!route.role) return true;
     return route.role.includes(current as string);
   });
-  if (loading) {
+  if (loading || !bannerData || !matchData || !sportData || !replayData) {
     return <Loader />;
   }
   // useEffect(() => {
