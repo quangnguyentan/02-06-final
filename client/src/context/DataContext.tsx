@@ -13,7 +13,7 @@ import { Banner } from "@/types/banner.types";
 import { setInitialLoadComplete, isInitialLoadComplete } from "@/lib/helper";
 
 // const production = "https://sv.hoiquan.live";
-const production = "http://51.79.181.110:22";
+const production = "http://51.79.181.110:8080";
 
 const development = "http://localhost:8080";
 const API_BASE_URL =

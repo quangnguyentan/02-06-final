@@ -253,7 +253,7 @@ const allowedOrigins = [
   "https://hoiquan.live",
   "http://localhost:5173",
   "http://192.168.1.5:5173",
-  "http://51.79.181.110:22", // thêm dòng này
+  "http://51.79.181.110:8080", // thêm dòng này
 ];
 
 // Redis client with improved retry logic
