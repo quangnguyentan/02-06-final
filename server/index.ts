@@ -234,11 +234,9 @@ import { connectDB } from "./src/configs/connectDB";
 import cookieParser from "cookie-parser";
 import { WebSocketServer } from "ws";
 import http from "http";
-import rateLimit from "express-rate-limit";
-import RedisStore from "rate-limit-redis";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import cluster from "cluster";
 import os from "os";
-import { createClient } from "redis";
 import mongoose from "mongoose";
 import { startPolling } from "./seed";
 import logger from "./src/utils/logger";
@@ -256,39 +254,11 @@ const allowedOrigins = [
   "http://51.79.181.110:5173",
 ];
 
-// Redis client with improved retry logic
-const redis = createClient({
-  url: process.env.REDIS_URL || "redis://localhost:6379",
-  socket: {
-    reconnectStrategy: (retries: number) => {
-      const maxRetries = 5;
-      if (retries >= maxRetries) {
-        logger.error("Max Redis retries reached");
-        return new Error("Max retries reached");
-      }
-      const delay = Math.min(retries * 1000, 5000);
-      logger.warn(
-        `Retrying Redis connection (${
-          retries + 1
-        }/${maxRetries}) after ${delay}ms`
-      );
-      return delay;
-    },
-  },
-});
-
-redis.on("error", (err) => logger.error("Redis error:", err));
-redis.connect().catch((err) => logger.error("Redis connection failed:", err));
-
-// Rate limiting for all requests
+// Rate limiting for all requests (in-memory store)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // 100 requests per IP
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.sendCommand(args),
-    prefix: "rate-limit:",
-  }),
-  keyGenerator: (req) => req.ip || "unknown-ip",
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? ""), // Ensure string is always passed
   handler: (req, res) => {
     logger.warn(`Rate limit reached for IP: ${req.ip}, URL: ${req.url}`);
     res.status(429).json({
@@ -303,11 +273,17 @@ const limiter = rateLimit({
 const criticalEndpointLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 20, // 20 requests per minute
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.sendCommand(args),
-    prefix: "critical-rate-limit:",
-  }),
-  keyGenerator: (req) => req.ip || "unknown-ip",
+  keyGenerator: (req) => ipKeyGenerator(req.ip ?? ""), // Ensure string is always passed
+  handler: (req, res) => {
+    logger.warn(
+      `Rate limit reached for critical endpoint: ${req.ip}, URL: ${req.url}`
+    );
+    res.status(429).json({
+      error: "Too Many Requests",
+      retryAfter: 60,
+      timestamp: new Date().toISOString(),
+    });
+  },
 });
 
 // CORS configuration
@@ -325,7 +301,7 @@ const corsOptions: CorsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "If-None-Match"], // Add If-None-Match
   optionsSuccessStatus: 200,
 };
 
@@ -360,6 +336,9 @@ app.use(
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
+// In-memory cache
+const cache: { [key: string]: { data: any; expiry: number } } = {};
+
 // ETag middleware
 const etags: { [key: string]: { etag: string; data: any } } = {};
 app.use((req, res, next) => {
@@ -376,6 +355,11 @@ app.use((req, res, next) => {
       .update(JSON.stringify(data))
       .digest("hex");
     etags[endpoint] = { etag, data };
+    cache[endpoint] = {
+      data,
+      expiry:
+        Date.now() + (endpoint === "/api/sports" ? 3600 * 1000 : 300 * 1000),
+    };
     res.set("ETag", etag);
   };
   next();
@@ -437,10 +421,10 @@ let lastUpdate: { [key: string]: Date } = {
 const fetchDataFromDB = async (endpoint: string) => {
   console.time(`fetchDataFromDB:${endpoint}`);
   const cacheKey = `cache:${endpoint}`;
-  const cached = await redis.get(cacheKey);
-  if (cached) {
+  const cached = cache[cacheKey];
+  if (cached && cached.expiry > Date.now()) {
     console.timeEnd(`fetchDataFromDB:${endpoint}`);
-    return JSON.parse(cached);
+    return cached.data;
   }
 
   if (mongoose.connection.readyState !== 1) {
@@ -456,14 +440,13 @@ const fetchDataFromDB = async (endpoint: string) => {
   const collection = db.collection(endpoint);
   const data = await collection
     .find()
-    .project({ name: 1, date: 1, status: 1, createdAt: 1, _id: 0 }) // Select only necessary fields
+    .project({ name: 1, date: 1, status: 1, createdAt: 1, _id: 0 })
     .limit(1000)
     .toArray();
-  await redis.setEx(
-    cacheKey,
-    endpoint === "sports" ? 3600 : 300,
-    JSON.stringify(data)
-  );
+  cache[cacheKey] = {
+    data,
+    expiry: Date.now() + (endpoint === "sports" ? 3600 * 1000 : 300 * 1000),
+  };
   console.timeEnd(`fetchDataFromDB:${endpoint}`);
   return data;
 };
@@ -524,6 +507,15 @@ const checkUpdates = async () => {
   }
 };
 
+// Clean up expired cache entries
+setInterval(() => {
+  for (const key in cache) {
+    if (cache[key].expiry < Date.now()) {
+      delete cache[key];
+    }
+  }
+}, 60000);
+
 setInterval(checkUpdates, 30000);
 
 // WebSocket connection handling
@@ -553,10 +545,6 @@ if (cluster.isPrimary) {
     setTimeout(() => cluster.fork(), 1000);
   });
 } else {
-  const workerRedis = createClient({ url: process.env.REDIS_URL });
-  workerRedis
-    .connect()
-    .catch((err) => logger.error("Worker Redis connection failed:", err));
   server.listen(PORT, async () => {
     logger.info(
       `Worker ${process.pid} running on http://localhost:${PORT} and ws://localhost:${PORT}/ws`

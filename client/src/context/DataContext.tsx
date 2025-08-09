@@ -381,7 +381,7 @@ const queryOptions = {
     Math.min(1000 * 2 ** attemptIndex, 5000),
   cacheTime: 15 * 60 * 1000,
   refetchOnWindowFocus: false,
-  refetchInterval: false as const, // Use 'as const' to satisfy ESLint/SonarQube
+  refetchInterval: false as const,
 };
 
 const useMatches = () =>
@@ -421,7 +421,7 @@ const useBanners = () =>
     queryKey: ["banners"],
     queryFn: fetchBanners,
     staleTime: 10 * 60 * 1000,
-    ...queryOptions, // Remove redundant 'retry: 1'
+    ...queryOptions,
   });
 
 const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({
@@ -568,11 +568,10 @@ const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({
         "/api/banners": fetchBanners,
       };
       const queryFn = endpointMap[endpoint];
-
       if (typeof queryFn === "function") {
         queryClient.prefetchQuery({
           queryKey: [endpoint.slice(1)],
-          queryFn: queryFn,
+          queryFn: () => queryFn(),
         });
       } else {
         console.warn(`No prefetch function for endpoint: ${endpoint}`);
