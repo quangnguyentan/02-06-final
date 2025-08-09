@@ -30,6 +30,6 @@ const sportSchema = new Schema<ISport>(
     timestamps: true,
   }
 );
-
+sportSchema.index({ order: 1 }); // Thêm index
 // `model<ISport>` sẽ trả về một Model được typed với interface ISport
 export default model<ISport>("Sport", sportSchema);

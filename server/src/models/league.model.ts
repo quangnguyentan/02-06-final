@@ -32,5 +32,5 @@ const leagueSchema = new Schema<ILeague>(
     timestamps: true,
   }
 );
-
+leagueSchema.index({ sport: 1 }); // Thêm index
 export default model<ILeague>("League", leagueSchema);

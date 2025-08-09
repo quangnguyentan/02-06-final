@@ -69,6 +69,8 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
   }
 );
+UserSchema.index({ role: 1 });
+UserSchema.index({ phone: 1 }, { unique: true, sparse: true });
 UserSchema.pre<IUser>("save", async function (next) {
   if (!this.isModified("password")) return next();
   const salt = bcrypt.genSaltSync(10);

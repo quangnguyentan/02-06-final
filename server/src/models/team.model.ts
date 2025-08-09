@@ -32,5 +32,6 @@ const teamSchema = new Schema<ITeam>(
     timestamps: true,
   }
 );
+teamSchema.index({ sport: 1 }); // Thêm index
 
 export default model<ITeam>("Team", teamSchema);

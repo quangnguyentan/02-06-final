@@ -77,5 +77,12 @@ const matchSchema = new Schema<IMatch>(
     timestamps: true,
   }
 );
-
+matchSchema.index({ homeTeam: 1 });
+matchSchema.index({ awayTeam: 1 });
+matchSchema.index({ league: 1 });
+matchSchema.index({ sport: 1 });
+matchSchema.index({ sport: 1, status: 1 }); // Compound index
+matchSchema.index({ league: 1, startTime: 1 }); // Compound index
+matchSchema.index({ isHot: 1 });
+matchSchema.index({ source: 1 });
 export default model<IMatch>("Match", matchSchema);

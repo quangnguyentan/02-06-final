@@ -10,10 +10,12 @@ import { setNavigate } from "./lib/navigate";
 import { Loader } from "./components/layout/Loader";
 import TokenExpirationChecker from "./pages/(User)/Token";
 import { useAppDispatch } from "./hooks/use-dispatch";
+import { useData } from "./context/DataContext";
 function App() {
   const { isLoggedIn, current, token } = useSelector(
     (state: RootState) => state.auth
   );
+  const { loading } = useData();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -36,6 +38,7 @@ function App() {
     if (!route.role) return true;
     return route.role.includes(current as string);
   });
+  if (loading) return <Loader />;
   // useEffect(() => {
   //   const handleBeforeUnload = (event) => {
   //     // Hiển thị thông báo hoặc thực hiện hành động trước khi reload
