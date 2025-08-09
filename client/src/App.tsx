@@ -15,7 +15,7 @@ function App() {
   const { isLoggedIn, current, token } = useSelector(
     (state: RootState) => state.auth
   );
-  const { loading } = useData();
+  const { loading, initialLoadComplete } = useData();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   useEffect(() => {
@@ -38,7 +38,9 @@ function App() {
     if (!route.role) return true;
     return route.role.includes(current as string);
   });
-  if (loading) return <Loader />;
+  if (loading && !initialLoadComplete) {
+    return <Loader />;
+  }
   // useEffect(() => {
   //   const handleBeforeUnload = (event) => {
   //     // Hiển thị thông báo hoặc thực hiện hành động trước khi reload

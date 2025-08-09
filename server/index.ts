@@ -234,7 +234,7 @@ import { connectDB } from "./src/configs/connectDB";
 import cookieParser from "cookie-parser";
 import { WebSocketServer } from "ws";
 import http from "http";
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import RedisStore from "rate-limit-redis";
 import cluster from "cluster";
 import os from "os";
@@ -253,21 +253,25 @@ const allowedOrigins = [
   "https://hoiquan.live",
   "http://localhost:5173",
   "http://192.168.1.5:5173",
-  "http://51.79.181.110:8080", // thêm dòng này
+  "http://51.79.181.110:5173",
 ];
 
 // Redis client with improved retry logic
-const MAX_REDIS_RETRIES = 5;
 const redis = createClient({
   url: process.env.REDIS_URL || "redis://localhost:6379",
   socket: {
     reconnectStrategy: (retries: number) => {
-      if (retries >= MAX_REDIS_RETRIES) {
-        logger.error("Max Redis retries reached, giving up");
+      const maxRetries = 5;
+      if (retries >= maxRetries) {
+        logger.error("Max Redis retries reached");
         return new Error("Max retries reached");
       }
       const delay = Math.min(retries * 1000, 5000);
-      logger.warn(`Retry attempt ${retries + 1} for Redis after ${delay}ms`);
+      logger.warn(
+        `Retrying Redis connection (${
+          retries + 1
+        }/${maxRetries}) after ${delay}ms`
+      );
       return delay;
     },
   },
@@ -276,32 +280,34 @@ const redis = createClient({
 redis.on("error", (err) => logger.error("Redis error:", err));
 redis.connect().catch((err) => logger.error("Redis connection failed:", err));
 
-// Dynamic rate limiting
+// Rate limiting for all requests
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100000,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // 100 requests per IP
   store: new RedisStore({
     sendCommand: (...args: string[]) => redis.sendCommand(args),
     prefix: "rate-limit:",
   }),
-  keyGenerator: (req) => ipKeyGenerator(req.ip ?? "unknown-ip"),
+  keyGenerator: (req) => req.ip || "unknown-ip",
   handler: (req, res) => {
-    logger.warn(
-      `Rate limit reached for IP: ${req.ip || "unknown-ip"}, URL: ${req.url}`
-    );
-    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, OPTIONS"
-    );
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-    // res.status(429).json({
-    //   error: "Too Many Requests",
-    //   retryAfter: 60,
-    //   timestamp: new Date().toISOString(),
-    // });
+    logger.warn(`Rate limit reached for IP: ${req.ip}, URL: ${req.url}`);
+    res.status(429).json({
+      error: "Too Many Requests",
+      retryAfter: 60,
+      timestamp: new Date().toISOString(),
+    });
   },
+});
+
+// Rate limiting for critical endpoints
+const criticalEndpointLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // 20 requests per minute
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => redis.sendCommand(args),
+    prefix: "critical-rate-limit:",
+  }),
+  keyGenerator: (req) => req.ip || "unknown-ip",
 });
 
 // CORS configuration
@@ -313,6 +319,7 @@ const corsOptions: CorsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, origin ?? true);
     } else {
+      logger.warn(`Blocked CORS origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
@@ -322,17 +329,57 @@ const corsOptions: CorsOptions = {
   optionsSuccessStatus: 200,
 };
 
+// Middleware
 app.use((req, res, next) => {
-  logger.info(`IP: ${req.ip} - ${req.method} ${req.url}`);
+  const start = Date.now();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    logger.info(
+      `IP: ${req.ip} - ${req.method} ${req.url} - ${res.statusCode} - ${duration}ms`
+    );
+  });
   next();
 });
 
 app.use(cors(corsOptions));
 app.use(limiter);
+app.use("/api/matches", criticalEndpointLimiter);
+app.use("/api/replays", criticalEndpointLimiter);
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    etag: true,
+    lastModified: true,
+    setHeaders: (res, path) => {
+      if (path.endsWith("favicon.ico")) {
+        res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache favicon for 1 year
+      }
+    },
+  })
+);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// ETag middleware
+const etags: { [key: string]: { etag: string; data: any } } = {};
+app.use((req, res, next) => {
+  const endpoint = req.path;
+  const clientEtag = req.headers["if-none-match"];
+  const cached = etags[endpoint];
+  if (clientEtag && cached && cached.etag === clientEtag) {
+    res.status(304).end();
+    return;
+  }
+  res.locals.setETag = (data: any) => {
+    const etag = require("crypto")
+      .createHash("md5")
+      .update(JSON.stringify(data))
+      .digest("hex");
+    etags[endpoint] = { etag, data };
+    res.set("ETag", etag);
+  };
+  next();
+});
 
 // Initialize routes
 initRoutes(app);
@@ -386,7 +433,7 @@ let lastUpdate: { [key: string]: Date } = {
   sports: new Date(0),
 };
 
-// Fetch data with DB connection check
+// Fetch data from DB with projection
 const fetchDataFromDB = async (endpoint: string) => {
   console.time(`fetchDataFromDB:${endpoint}`);
   const cacheKey = `cache:${endpoint}`;
@@ -397,9 +444,7 @@ const fetchDataFromDB = async (endpoint: string) => {
   }
 
   if (mongoose.connection.readyState !== 1) {
-    logger.warn(
-      `Database not connected for ${endpoint}, attempting to reconnect...`
-    );
+    logger.warn(`Database not connected for ${endpoint}, reconnecting...`);
     await connectDB();
   }
 
@@ -409,16 +454,26 @@ const fetchDataFromDB = async (endpoint: string) => {
     throw new Error("Database connection failed");
   }
   const collection = db.collection(endpoint);
-  const data = await collection.find().limit(1000).toArray();
-  await redis.setEx(cacheKey, 300, JSON.stringify(data));
+  const data = await collection
+    .find()
+    .project({ name: 1, date: 1, status: 1, createdAt: 1, _id: 0 }) // Select only necessary fields
+    .limit(1000)
+    .toArray();
+  await redis.setEx(
+    cacheKey,
+    endpoint === "sports" ? 3600 : 300,
+    JSON.stringify(data)
+  );
   console.timeEnd(`fetchDataFromDB:${endpoint}`);
   return data;
 };
 
 // Broadcast WebSocket updates
 const broadcastUpdate = (endpoint: string) => {
-  if (wss.clients.size > 10000) {
-    logger.warn("Too many WebSocket clients, skipping broadcast");
+  if (wss.clients.size > 5000) {
+    logger.warn(
+      `Too many WebSocket clients (${wss.clients.size}), throttling broadcast`
+    );
     return;
   }
   wss.clients.forEach((client) => {
@@ -434,7 +489,7 @@ const broadcastUpdate = (endpoint: string) => {
   });
 };
 
-// Check updates
+// Check updates with data change detection
 const checkUpdates = async () => {
   const now = new Date();
   const endpoints = [
@@ -447,7 +502,17 @@ const checkUpdates = async () => {
     if (now.getTime() - (lastUpdate[name]?.getTime() || 0) > interval) {
       try {
         const newData = await fetchDataFromDB(name);
-        if (JSON.stringify(newData) !== JSON.stringify(lastData[name])) {
+        const newDataHash = require("crypto")
+          .createHash("md5")
+          .update(JSON.stringify(newData))
+          .digest("hex");
+        const oldDataHash = require("crypto")
+          .createHash("md5")
+          .update(JSON.stringify(lastData[name] || {}))
+          .digest("hex");
+
+        if (newDataHash !== oldDataHash) {
+          logger.info(`Data changed for ${name}, broadcasting update`);
           broadcastUpdate(`/api/${name}`);
           lastData[name] = newData;
           lastUpdate[name] = now;
@@ -467,16 +532,18 @@ wss.on("connection", (ws) => {
   ws.on("message", (message) => {
     ws.send(JSON.stringify({ type: "ack", message: "Message received" }));
   });
-  ws.on("error", (error) => {
-    logger.error("WebSocket error:", (error as any).message);
-  });
+  ws.on("error", (error) =>
+    logger.error("WebSocket error:", (error as any).message)
+  );
   ws.on("close", () => logger.info("WebSocket connection closed"));
 });
 
 // Cluster for scalability
 if (cluster.isPrimary) {
-  logger.info(`Master ${process.pid} is running with ${numCPUs} workers`);
-  for (let i = 0; i < numCPUs; i++) {
+  logger.info(
+    `Master ${process.pid} is running with ${Math.min(numCPUs, 4)} workers`
+  );
+  for (let i = 0; i < Math.min(numCPUs, 4); i++) {
     cluster.fork();
   }
   cluster.on("exit", (worker, code, signal) => {
@@ -486,23 +553,17 @@ if (cluster.isPrimary) {
     setTimeout(() => cluster.fork(), 1000);
   });
 } else {
-  try {
-    server.listen(PORT, async () => {
-      logger.info(
-        `Worker ${
-          process.pid
-        } running on http://localhost:${PORT} and ws://localhost:${PORT}/ws at ${new Date().toLocaleString(
-          "en-US",
-          { timeZone: "Asia/Ho_Chi_Minh" }
-        )}`
-      );
-      await connectDB();
-      // startPolling().catch((err) => logger.error("Polling error:", err));
-    });
-  } catch (err) {
-    logger.error(`Worker ${process.pid} failed to start:`, err);
-    process.exit(1);
-  }
+  const workerRedis = createClient({ url: process.env.REDIS_URL });
+  workerRedis
+    .connect()
+    .catch((err) => logger.error("Worker Redis connection failed:", err));
+  server.listen(PORT, async () => {
+    logger.info(
+      `Worker ${process.pid} running on http://localhost:${PORT} and ws://localhost:${PORT}/ws`
+    );
+    await connectDB();
+    startPolling().catch((err) => logger.error("Polling error:", err));
+  });
 }
 
 // Global error handlers
