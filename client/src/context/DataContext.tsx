@@ -316,27 +316,48 @@ import { VideoReels } from "@/types/videoReel.type";
 import { Banner } from "@/types/banner.types";
 import { setInitialLoadComplete, isInitialLoadComplete } from "@/lib/helper";
 
-const production = "http://51.79.181.110:8080";
-const development = "http://localhost:8080";
-const API_BASE_URL =
-  import.meta.env.VITE_NODE_ENV === "production" ? production : development;
+const API_BASE_URLS = [
+  import.meta.env.VITE_NODE_ENV === "production"
+    ? "https://hoiquan.live"
+    : "http://localhost:8080",
+];
 
-const fetchData = async (url: string) => {
+const WS_URLS = [
+  import.meta.env.VITE_NODE_ENV === "production"
+    ? "wss://hoiquan.live/ws"
+    : "ws://localhost:8080/ws",
+];
+
+const fetchData = async (url: string, apiIndex = 0): Promise<any> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 10000);
   try {
     const cachedEtag = localStorage.getItem(`etag:${url}`) || "";
-    const res = await fetch(`${API_BASE_URL}${url}`, {
+    const res = await fetch(`${API_BASE_URLS[apiIndex]}${url}`, {
       signal: controller.signal,
       credentials: "include",
       headers: { "If-None-Match": cachedEtag },
     });
     clearTimeout(timeoutId);
+
     if (res.status === 304) {
       const cachedData = localStorage.getItem(`cache:${url}`);
       return cachedData ? JSON.parse(cachedData) : [];
     }
-    if (!res.ok) throw new Error(`Failed to fetch: ${res.statusText}`);
+
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After") || "5";
+      await new Promise((resolve) =>
+        setTimeout(resolve, parseInt(retryAfter, 10) * 1000)
+      );
+      return fetchData(url, apiIndex);
+    }
+
+    if (!res.ok && apiIndex < API_BASE_URLS.length - 1) {
+      return fetchData(url, apiIndex + 1);
+    }
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     const data = await res.json();
     const etag = res.headers.get("ETag");
     if (etag) {
@@ -346,10 +367,13 @@ const fetchData = async (url: string) => {
     return data;
   } catch (error) {
     clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Request timed out");
+    if (
+      error instanceof Error &&
+      error.name === "AbortError" &&
+      apiIndex < API_BASE_URLS.length - 1
+    ) {
+      return fetchData(url, apiIndex + 1);
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     throw error instanceof Error ? error : new Error("Unknown fetch error");
   }
 };
@@ -377,18 +401,16 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 
 const queryOptions = {
   retry: 2,
-  retryDelay: (attemptIndex: number) =>
-    Math.min(1000 * 2 ** attemptIndex, 5000),
-  cacheTime: 15 * 60 * 1000,
+  retryDelay: (attempt: number) => Math.min(1000 * 2 ** attempt, 5000),
+  cacheTime: 30 * 60 * 1000,
   refetchOnWindowFocus: false,
-  refetchInterval: false as const,
 };
 
 const useMatches = () =>
   useQuery<Match[], Error>({
     queryKey: ["matches"],
     queryFn: fetchMatches,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     ...queryOptions,
   });
 
@@ -396,7 +418,7 @@ const useReplays = () =>
   useQuery<Replay[], Error>({
     queryKey: ["replays"],
     queryFn: fetchReplays,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     ...queryOptions,
   });
 
@@ -404,7 +426,7 @@ const useSports = () =>
   useQuery<Sport[], Error>({
     queryKey: ["sports"],
     queryFn: fetchSports,
-    staleTime: 4 * 60 * 60 * 1000,
+    staleTime: 2 * 60 * 60 * 1000,
     ...queryOptions,
   });
 
@@ -412,7 +434,7 @@ const useVideoReels = () =>
   useQuery<VideoReels[], Error>({
     queryKey: ["videoReels"],
     queryFn: fetchVideoReels,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     ...queryOptions,
   });
 
@@ -420,7 +442,7 @@ const useBanners = () =>
   useQuery<Banner[], Error>({
     queryKey: ["banners"],
     queryFn: fetchBanners,
-    staleTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     ...queryOptions,
   });
 
@@ -429,27 +451,27 @@ const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const queryClient = useQueryClient();
   const {
-    data: matchData = [],
+    data: matchData,
     isLoading: matchLoading,
     error: matchError,
   } = useMatches();
   const {
-    data: replayData = [],
+    data: replayData,
     isLoading: replayLoading,
     error: replayError,
   } = useReplays();
   const {
-    data: sportData = [],
+    data: sportData,
     isLoading: sportLoading,
     error: sportError,
   } = useSports();
   const {
-    data: videoReelData = [],
+    data: videoReelData,
     isLoading: videoReelLoading,
     error: videoReelError,
   } = useVideoReels();
   const {
-    data: bannerData = [],
+    data: bannerData,
     isLoading: bannerLoading,
     error: bannerError,
   } = useBanners();
@@ -469,31 +491,11 @@ const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({
 
   const refetchData = useCallback(async () => {
     await Promise.all([
-      queryClient.refetchQueries({
-        queryKey: ["matches"],
-        exact: true,
-        type: "active",
-      }),
-      queryClient.refetchQueries({
-        queryKey: ["replays"],
-        exact: true,
-        type: "active",
-      }),
-      queryClient.refetchQueries({
-        queryKey: ["sports"],
-        exact: true,
-        type: "active",
-      }),
-      queryClient.refetchQueries({
-        queryKey: ["videoReels"],
-        exact: true,
-        type: "active",
-      }),
-      queryClient.refetchQueries({
-        queryKey: ["banners"],
-        exact: true,
-        type: "active",
-      }),
+      queryClient.refetchQueries({ queryKey: ["matches"], exact: true }),
+      queryClient.refetchQueries({ queryKey: ["replays"], exact: true }),
+      queryClient.refetchQueries({ queryKey: ["sports"], exact: true }),
+      queryClient.refetchQueries({ queryKey: ["videoReels"], exact: true }),
+      queryClient.refetchQueries({ queryKey: ["banners"], exact: true }),
     ]);
   }, [queryClient]);
 
@@ -507,55 +509,40 @@ const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     let reconnectAttempts = 0;
     const maxReconnectAttempts = 5;
-    const wsUrl =
-      import.meta.env.VITE_NODE_ENV === "production"
-        ? "wss://sv.hoiquan.live/ws"
-        : "ws://localhost:8080/ws";
 
-    const connectWebSocket = () => {
+    const connectWebSocket = (wsIndex = 0) => {
       if (reconnectAttempts >= maxReconnectAttempts) {
-        console.error("Max WebSocket reconnect attempts reached");
+        if (wsIndex < WS_URLS.length - 1) {
+          console.log(`Switching to backup WebSocket: ${WS_URLS[wsIndex + 1]}`);
+          reconnectAttempts = 0;
+          connectWebSocket(wsIndex + 1);
+        }
         return;
       }
-      const websocket = new WebSocket(wsUrl);
+
+      const websocket = new WebSocket(WS_URLS[wsIndex]);
       websocket.onopen = () => {
-        console.log(
-          "WebSocket connected at",
-          new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-        );
+        console.log(`WebSocket connected to ${WS_URLS[wsIndex]}`);
         reconnectAttempts = 0;
       };
       websocket.onmessage = (event: MessageEvent) => {
         const message = JSON.parse(event.data);
-        console.log("Received WebSocket message:", message);
         if (message.type === "data_updated") {
           queryClient.invalidateQueries({
             queryKey: [message.endpoint.slice(1)],
-            type: "active",
           });
         }
       };
-      websocket.onclose = (event: CloseEvent) => {
-        console.log(
-          "WebSocket disconnected, code:",
-          event.code,
-          "reason:",
-          event.reason
-        );
+      websocket.onclose = () => {
         reconnectAttempts++;
-        setTimeout(connectWebSocket, 5000 * reconnectAttempts);
+        setTimeout(() => connectWebSocket(wsIndex), 5000 * reconnectAttempts);
       };
-      websocket.onerror = () => {
-        websocket.close();
-      };
+      websocket.onerror = () => websocket.close();
       setWs(websocket);
     };
 
     connectWebSocket();
-    return () => {
-      ws?.close();
-      setWs(null);
-    };
+    return () => ws?.close();
   }, [queryClient]);
 
   const prefetchData = useCallback(
@@ -573,8 +560,6 @@ const DataProviderInner: React.FC<{ children: React.ReactNode }> = ({
           queryKey: [endpoint.slice(1)],
           queryFn: () => queryFn(),
         });
-      } else {
-        console.warn(`No prefetch function for endpoint: ${endpoint}`);
       }
     },
     [queryClient]
@@ -613,8 +598,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useData = () => {
   const context = useContext(DataContext);
-  if (!context) {
-    throw new Error("useData must be used within a DataProvider");
-  }
+  if (!context) throw new Error("useData must be used within a DataProvider");
   return context;
 };

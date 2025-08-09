@@ -123,7 +123,7 @@ const AppContent: React.FC = () => {
     return (replayData || []).filter((match) => match?.isShown);
   }, [replayData]);
 
-  if (loading && !initialLoadComplete && !sportData?.length) {
+  if (loading && !initialLoadComplete) {
     return <Loader />;
   }
   if (error) return <div>Error: {error.message}</div>;

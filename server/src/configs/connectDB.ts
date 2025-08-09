@@ -37,13 +37,12 @@ export async function connectDB() {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI as string, {
       dbName: "hoiquantv",
-      serverSelectionTimeoutMS: 5000,
-      maxPoolSize: 100,
-      minPoolSize: 20,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
       connectTimeoutMS: 10000,
-      socketTimeoutMS: 60000,
-      autoIndex: false,
-      heartbeatFrequencyMS: 10000,
+      maxPoolSize: 100, // Tăng số kết nối tối đa
+      retryWrites: true,
+      retryReads: true,
     });
 
     isConnected = true;

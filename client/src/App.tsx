@@ -38,7 +38,7 @@ function App() {
     if (!route.role) return true;
     return route.role.includes(current as string);
   });
-  if (loading && !initialLoadComplete) {
+  if (loading) {
     return <Loader />;
   }
   // useEffect(() => {
