@@ -11,8 +11,8 @@ interface LoadTestConfig {
 
 const config: LoadTestConfig = {
   url: "http://localhost:8080", // URL server cần test
-  connections: 10000, // nếu máy chịu nổi
-  duration: 60, // test 1 phút
+  connections: 5000, // nếu máy chịu nổi
+  duration: 10, // test 1 phút
   pipelining: 10,
 };
 

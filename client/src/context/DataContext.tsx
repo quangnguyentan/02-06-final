@@ -318,13 +318,13 @@ import { setInitialLoadComplete, isInitialLoadComplete } from "@/lib/helper";
 
 const API_BASE_URLS = [
   import.meta.env.VITE_NODE_ENV === "production"
-    ? "https://hoiquan.live"
+    ? "https://sv.hoiquan.live"
     : "http://localhost:8080",
 ];
 
 const WS_URLS = [
   import.meta.env.VITE_NODE_ENV === "production"
-    ? "wss://hoiquan.live/ws"
+    ? "wss://sv.hoiquan.live/ws"
     : "ws://localhost:8080/ws",
 ];
 

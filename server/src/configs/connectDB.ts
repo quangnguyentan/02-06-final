@@ -40,7 +40,8 @@ export async function connectDB() {
       serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
       connectTimeoutMS: 10000,
-      maxPoolSize: 100, // Tăng số kết nối tối đa
+      maxPoolSize: 100,
+      minPoolSize: 5,
       retryWrites: true,
       retryReads: true,
     });

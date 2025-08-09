@@ -1,229 +1,3 @@
-// import express from "express";
-// import cors, { CorsOptions } from "cors";
-// import dotenv from "dotenv";
-// import { initRoutes } from "./src/routes/index.routes";
-// import path from "path";
-// import { connectDB } from "./src/configs/connectDB";
-// import cookieParser from "cookie-parser";
-// import { startPolling } from "./seed";
-// import { WebSocketServer } from "ws";
-// import http from "http";
-// process.env.TZ = "Asia/Ho_Chi_Minh";
-// dotenv.config();
-// const app = express();
-// const PORT = process.env.PORT ?? 5000;
-// const allowedOrigins = [
-//   "https://hoiquan.live",
-//   "http://localhost:5173",
-//   "http://192.168.1.5:5173",
-// ];
-
-// const corsOptions: CorsOptions = {
-//   origin: (
-//     origin: string | undefined,
-//     callback: (err: Error | null, allow?: boolean | string) => void
-//   ) => {
-//     if (!origin) {
-//       // Cho phép yêu cầu không có origin (ví dụ: từ server-side hoặc non-browser client)
-//       callback(null, true);
-//     } else if (allowedOrigins.includes(origin)) {
-//       console.log("Allowed origin set to:", origin);
-//       callback(null, origin);
-//     } else {
-//       console.log("Blocked origin:", origin);
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true,
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   optionsSuccessStatus: 200,
-// };
-
-// app.use(cors(corsOptions));
-
-// // app.use((req, res, next) => {
-// //   res.removeHeader("Access-Control-Allow-Origin");
-// //   res.removeHeader("Access-Control-Allow-Credentials");
-// //   const origin = req.headers.origin;
-// //   if (origin && allowedOrigins.includes(origin)) {
-// //     res.setHeader("Access-Control-Allow-Origin", origin);
-// //     res.setHeader("Access-Control-Allow-Credentials", "true");
-// //   }
-// //   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-// //   res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-// //   if (req.method === "OPTIONS") {
-// //     res.setHeader(
-// //       "Access-Control-Allow-Methods",
-// //       "GET, POST, PUT, DELETE, OPTIONS"
-// //     );
-// //     res.setHeader(
-// //       "Access-Control-Allow-Headers",
-// //       "Content-Type, Authorization"
-// //     );
-// //     res.status(204).end(); // Proper preflight response
-// //     return;
-// //   }
-// //   next();
-// // });
-
-// app.use(
-//   (
-//     err: Error,
-//     req: express.Request,
-//     res: express.Response,
-//     next: express.NextFunction
-//   ) => {
-//     const origin = req.headers.origin;
-//     if (origin && allowedOrigins.includes(origin)) {
-//       res.header("Access-Control-Allow-Origin", origin);
-//       res.header("Access-Control-Allow-Credentials", "true");
-//     }
-//     res
-//       .status(err.name === "NotAllowedError" ? 403 : 500)
-//       .json({ error: err.message });
-//   }
-// );
-
-// app.use(cookieParser());
-// // app.use(
-// //   "/static",
-// //   (req, res, next) => {
-// //     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp"];
-// //     const ext = path.extname(req.path).toLowerCase();
-// //     if (imageExtensions.includes(ext)) {
-// //       res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-// //     }
-// //     next();
-// //   },
-// //   express.static(path.join(__dirname, "./assets/images"))
-// // );
-// app.use(express.static(path.join(__dirname, "public")));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: true }));
-// initRoutes(app);
-// connectDB();
-
-// // Cache ETag
-// const etags: { [key: string]: string } = {};
-
-// const setETag = (
-//   req: express.Request,
-//   res: express.Response,
-//   next: express.NextFunction
-// ) => {
-//   const endpoint = req.path;
-//   const data = res.locals.data || {}; // Giả sử data được lưu trong res.locals
-//   const etag = require("crypto")
-//     .createHash("md5")
-//     .update(JSON.stringify(data))
-//     .digest("hex");
-//   etags[endpoint] = etag;
-//   res.set("ETag", etag);
-//   next();
-// };
-
-// app.use((req, res, next) => {
-//   const endpoint = req.path;
-//   const clientEtag = req.headers["if-none-match"];
-//   if (clientEtag && etags[endpoint] === clientEtag) {
-//     res.status(304).end();
-//     return;
-//   }
-//   next();
-// });
-
-// // Tạo server HTTP để hỗ trợ cả Express và WebSocket
-// const server = http.createServer(app);
-// const wss = new WebSocketServer({ server });
-
-// // Lưu trữ thời gian cập nhật cuối cùng
-// let lastUpdate: { [key: string]: Date } = {
-//   matches: new Date(0),
-//   replays: new Date(0),
-//   sports: new Date(0),
-// };
-
-// const broadcastUpdate = (endpoint: string) => {
-//   wss.clients.forEach((client) => {
-//     if (client.readyState === 1) {
-//       client.send(
-//         JSON.stringify({
-//           type: "data_updated",
-//           endpoint: endpoint,
-//           timestamp: new Date().toISOString(),
-//         })
-//       );
-//     }
-//   });
-// };
-
-// // Kiểm tra thay đổi từ DB (cần triển khai)
-// const checkUpdates = () => {
-//   const now = new Date();
-//   if (now.getTime() - lastUpdate.matches.getTime() > 10000) {
-//     broadcastUpdate("/api/matches");
-//     lastUpdate.matches = now;
-//   }
-//   if (now.getTime() - lastUpdate.replays.getTime() > 10000) {
-//     broadcastUpdate("/api/replays");
-//     lastUpdate.replays = now;
-//   }
-//   if (now.getTime() - lastUpdate.sports.getTime() > 300000) {
-//     broadcastUpdate("/api/sports");
-//     lastUpdate.sports = now;
-//   }
-// };
-
-// setInterval(checkUpdates, 5000); // Kiểm tra mỗi 5 giây
-
-// // Xử lý WebSocket connections
-// wss.on("connection", (ws) => {
-//   console.log(
-//     "Client connected to WebSocket at",
-//     new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-//   );
-
-//   ws.on("message", (message) => {
-//     console.log(`Received from client: ${message}`);
-//     ws.send(JSON.stringify({ type: "ack", message: "Message received" }));
-//   });
-
-//   const interval = setInterval(() => {
-//     ws.send(
-//       JSON.stringify({
-//         type: "data_updated",
-//         endpoint: "/api/replays",
-//         timestamp: new Date().toISOString(),
-//       })
-//     );
-//   }, 10000); // Cập nhật mỗi 10 giây
-
-//   ws.on("close", () => {
-//     console.log(
-//       "Client disconnected at",
-//       new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-//     );
-//     clearInterval(interval);
-//   });
-
-//   ws.onerror = (error) => {
-//     console.error(
-//       "WebSocket error at",
-//       new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" }),
-//       (error as any).message
-//     );
-//   };
-// });
-
-// // Khởi động server
-// server.listen(PORT, () => {
-//   console.log(
-//     `Server is running on http://localhost:${PORT} and ws://localhost:${PORT}/ws at`,
-//     new Date().toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
-//   );
-//   startPolling();
-// });
 import express, { Request, Response, NextFunction } from "express";
 import cors, { CorsOptions } from "cors";
 import dotenv from "dotenv";
@@ -234,18 +8,16 @@ import cookieParser from "cookie-parser";
 import { WebSocketServer, WebSocket } from "ws";
 import http from "http";
 import rateLimit from "express-rate-limit";
-import cluster from "cluster";
-import os from "os";
 import mongoose from "mongoose";
-import { startPolling } from "./seed";
 import logger from "./src/utils/logger";
 import async, { AsyncQueue } from "async";
 import { createHash } from "crypto";
+import compression from "compression";
+import { startPolling } from "./seed";
 
 process.env.TZ = "Asia/Ho_Chi_Minh";
 dotenv.config();
 
-const numCPUs: number = os.cpus().length;
 const app = express();
 const PORT: string | number = process.env.PORT ?? 8080;
 const allowedOrigins: string[] = [
@@ -274,9 +46,12 @@ const requestQueue: AsyncQueue<QueueTask> = async.queue(
         timestamp: new Date().toISOString(),
       });
       callback(new Error("Request timeout"));
-    }, 5000); // 30 seconds timeout
+    }, 10000); // 10 seconds timeout
     try {
-      next();
+      await new Promise<void>((resolve) => {
+        next();
+        resolve();
+      });
       clearTimeout(timeout);
       callback();
     } catch (error: unknown) {
@@ -290,8 +65,8 @@ const requestQueue: AsyncQueue<QueueTask> = async.queue(
       callback(err);
     }
   },
-  50
-); // Process one request at a time
+  1 // Single concurrency for strict FIFO
+);
 
 // Queue middleware
 const queueMiddleware = (
@@ -300,9 +75,7 @@ const queueMiddleware = (
   next: NextFunction
 ): void => {
   logger.info(
-    `Adding request to queue: ${
-      req.url
-    } (Queue length: ${requestQueue.length()})`
+    `Adding request to queue: ${req.url} (Queue length: ${requestQueue.length()})`
   );
   requestQueue.push({ req, res, next }, (err: Error | null | undefined) => {
     if (err) {
@@ -314,28 +87,11 @@ const queueMiddleware = (
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20000, // Tăng lên 20,000 yêu cầu/15 phút
+  max: 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     error: "Rate limit exceeded. Please wait a few minutes and try again.",
-    retryAfter: 5,
-    timestamp: new Date().toISOString(),
-  },
-  skip: (req: Request) => allowedDevIPs.includes(req.ip ?? ""),
-  handler: (req: Request, res: Response, _next: NextFunction, options: any) => {
-    logger.warn(`Rate limit hit by IP: ${req.ip} for ${req.url}`);
-    res.status(429).json(options.message);
-  },
-});
-
-const criticalEndpointLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 5000, // Tăng lên 5,000 yêu cầu/phút
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    error: "Rate limit exceeded for this endpoint. Please wait and try again.",
     retryAfter: 5,
     timestamp: new Date().toISOString(),
   },
@@ -367,10 +123,10 @@ const corsOptions: CorsOptions = {
 
 // Middleware
 app.use(limiter);
-app.use("/api/matches", queueMiddleware, criticalEndpointLimiter);
-app.use("/api/replays", queueMiddleware, criticalEndpointLimiter);
+app.use(queueMiddleware); // Apply queue to all routes
 app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(compression({ level: 6 }));
 app.use(
   express.static(path.join(__dirname, "public"), {
     etag: true,
@@ -382,8 +138,8 @@ app.use(
     },
   })
 );
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
 // Request logging
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -418,8 +174,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     etags[endpoint] = etag;
     cache[endpoint] = {
       data,
-      expiry:
-        Date.now() + (endpoint === "/api/sports" ? 600 * 1000 : 60 * 1000),
+      expiry: Date.now() + 60 * 1000, // 1 minute cache
     };
     res.set("ETag", etag);
   };
@@ -435,7 +190,7 @@ app.get("/", (_req: Request, res: Response) => {
 app.get("/api/queue-status", (_req: Request, res: Response) => {
   res.json({
     position: requestQueue.length(),
-    estimatedWaitTime: requestQueue.length() * 0.5, // Assume 0.5s per request
+    estimatedWaitTime: requestQueue.length() * 0.3, // Assume 0.3s per request
   });
 });
 
@@ -515,20 +270,24 @@ const fetchDataFromDB = async (endpoint: string): Promise<any[]> => {
   const data = await collection
     .find({})
     .project({ name: 1, date: 1, status: 1, createdAt: 1, _id: 0 })
-    .limit(1000)
+    .limit(500) // Reduced limit to decrease load
     .toArray();
 
-  cache[cacheKey] = {
-    data,
-    expiry: Date.now() + (endpoint === "sports" ? 600 * 1000 : 60 * 1000),
-  };
-  logger.info(`Cache miss for ${endpoint}, data fetched from DB`);
+  if (data.length > 0) {
+    cache[cacheKey] = {
+      data,
+      expiry: Date.now() + 60 * 1000, // 1 minute cache
+    };
+    logger.info(`Cache miss for ${endpoint}, data fetched from DB`);
+  } else {
+    logger.warn(`No data found for ${endpoint}`);
+  }
   return data;
 };
 
 // Broadcast updates
 const broadcastUpdate = (endpoint: string): void => {
-  if (wss.clients.size > 1000) {
+  if (wss.clients.size > 500) {
     logger.warn(`Too many WebSocket clients (${wss.clients.size})`);
     return;
   }
@@ -548,9 +307,9 @@ const broadcastUpdate = (endpoint: string): void => {
 // Check updates
 const checkUpdates = async (): Promise<void> => {
   const endpoints: { name: string; interval: number }[] = [
-    { name: "matches", interval: 60000 },
-    { name: "replays", interval: 120000 },
-    { name: "sports", interval: 600000 },
+    { name: "matches", interval: 120000 }, // 2 minutes
+    { name: "replays", interval: 300000 }, // 5 minutes
+    { name: "sports", interval: 900000 }, // 15 minutes
   ];
 
   for (const { name, interval } of endpoints) {
@@ -586,18 +345,18 @@ setInterval(() => {
       logger.info(`Cache cleared for ${key}`);
     }
   }
-}, 60000);
+}, 120000); // 2 minutes
 
 // Monitor queue length
 setInterval(() => {
   logger.info(`Queue length: ${requestQueue.length()}`);
-}, 60000);
+}, 120000); // 2 minutes
 
-setInterval(checkUpdates, 30000);
+setInterval(checkUpdates, 60000); // 1 minute
 
 // WebSocket handling
 wss.on("connection", (ws: WebSocket) => {
-  if (wss.clients.size >= 1000) {
+  if (wss.clients.size >= 500) {
     ws.close(1001, "Too many connections");
     return;
   }
@@ -606,7 +365,7 @@ wss.on("connection", (ws: WebSocket) => {
     JSON.stringify({
       type: "queue_status",
       position: requestQueue.length(),
-      estimatedWaitTime: requestQueue.length() * 0.5,
+      estimatedWaitTime: requestQueue.length() * 0.3,
     })
   );
   const interval = setInterval(() => {
@@ -614,10 +373,10 @@ wss.on("connection", (ws: WebSocket) => {
       JSON.stringify({
         type: "queue_status",
         position: requestQueue.length(),
-        estimatedWaitTime: requestQueue.length() * 0.5,
+        estimatedWaitTime: requestQueue.length() * 0.3,
       })
     );
-  }, 5000);
+  }, 10000); // 10 seconds
   ws.on("message", (message: string | Buffer) => {
     ws.send(JSON.stringify({ type: "ack", message: "Message received" }));
   });
@@ -647,27 +406,31 @@ async function setupIndexes(): Promise<void> {
       "video-reels",
       "banners",
     ];
+    const desiredIndexes: {
+      [key: string]: { key: any; name: string; unique?: boolean; sparse?: boolean }[];
+    } = {
+      matches: [
+        { key: { date: -1, status: 1 }, name: "matches_date_status_idx" },
+      ],
+      replays: [
+        { key: { date: -1 }, name: "replays_date_idx" },
+      ],
+      sports: [
+        { key: { name: 1 }, name: "sports_name_idx", unique: true },
+      ],
+      "video-reels": [
+        { key: { createdAt: -1 }, name: "video_reels_idx" },
+      ],
+      banners: [
+        { key: { createdAt: -1 }, name: "banners_idx" },
+      ],
+    };
+
     for (const collectionName of collections) {
       const collection = db.collection(collectionName);
       const existingIndexes = await collection.indexes();
 
-      const desiredIndexes: {
-        [key: string]: { key: any; name: string; unique?: boolean }[];
-      } = {
-        matches: [
-          { key: { name: 1, date: -1, status: 1 }, name: "matches_idx" },
-        ],
-        replays: [
-          { key: { name: 1, date: -1, status: 1 }, name: "replays_idx" },
-        ],
-        sports: [{ key: { name: 1 }, name: "sports_name_idx", unique: true }],
-        "video-reels": [{ key: { createdAt: -1 }, name: "video_reels_idx" }],
-        banners: [{ key: { createdAt: -1 }, name: "banners_idx" }],
-      };
-
-      const indexesToCreate = desiredIndexes[collectionName] || [];
-
-      for (const indexSpec of indexesToCreate) {
+      for (const indexSpec of desiredIndexes[collectionName] || []) {
         const indexExists = existingIndexes.some(
           (idx: any) =>
             idx.name === indexSpec.name ||
@@ -675,23 +438,15 @@ async function setupIndexes(): Promise<void> {
         );
 
         if (!indexExists) {
-          try {
-            await collection.createIndex(indexSpec.key, {
-              name: indexSpec.name,
-              unique: indexSpec.unique || false,
-              background: true,
-            });
-            logger.info(`Created index ${indexSpec.name} on ${collectionName}`);
-          } catch (err: unknown) {
-            const error = err instanceof Error ? err : new Error(String(err));
-            logger.error(
-              `Failed to create index ${indexSpec.name} on ${collectionName}: ${error.message}`
-            );
-          }
+          await collection.createIndex(indexSpec.key, {
+            name: indexSpec.name,
+            unique: indexSpec.unique || false,
+            sparse: indexSpec.sparse || false,
+            background: true,
+          });
+          logger.info(`Created index ${indexSpec.name} on ${collectionName}`);
         } else {
-          logger.info(
-            `Index ${indexSpec.name} already exists on ${collectionName}`
-          );
+          logger.info(`Index ${indexSpec.name} already exists on ${collectionName}`);
         }
       }
     }
@@ -701,31 +456,20 @@ async function setupIndexes(): Promise<void> {
   }
 }
 
-// Cluster
-if (cluster.isPrimary) {
-  logger.info(`Master ${process.pid} is running with ${numCPUs} workers`);
-  for (let i = 0; i < Math.max(numCPUs * 4, 8); i++) {
-    cluster.fork();
+// Start server
+server.listen(PORT, async () => {
+  logger.info(`Server running on port ${PORT}`);
+  try {
+    await connectDB();
+    await setupIndexes();
+    await startPolling().catch((err: Error) =>
+      logger.error("Polling error:", err.message)
+    );
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error(`Server failed to start: ${error.message}`);
   }
-  cluster.on("exit", (worker, code, signal) => {
-    logger.warn(`Worker ${worker.process.pid} died. Restarting...`);
-    setTimeout(() => cluster.fork(), 1000);
-  });
-} else {
-  server.listen(PORT, async () => {
-    logger.info(`Worker ${process.pid} running on port ${PORT}`);
-    try {
-      await connectDB();
-      await setupIndexes();
-      await startPolling().catch((err: Error) =>
-        logger.error("Polling error:", err.message)
-      );
-    } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      logger.error(`Worker ${process.pid} failed to start: ${error.message}`);
-    }
-  });
-}
+});
 
 // Global error handlers
 process.on("uncaughtException", (err: Error) => {
@@ -740,5 +484,4 @@ process.on(
     logger.error(
       `Unhandled Rejection at: ${promise}, reason: ${error.message}`
     );
-  }
-);
+  });
